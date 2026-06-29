@@ -1,0 +1,20 @@
+# Web (Next.js)
+web/node_modules/
+web/.next/
+web/.env
+web/.env.local
+web/.env.*.local
+
+# App (Flutter)
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/android/local.properties
+app/android/app/google-services.json
+app/ios/Pods/
+app/pubspec.lock
+
+# Common
+.DS_Store
+*.log

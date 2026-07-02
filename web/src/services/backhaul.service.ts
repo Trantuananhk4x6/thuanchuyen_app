@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { getDirections } from "@/lib/goong/directions";
+import { driverNetForFare } from "@/repositories/pricing.repository";
 
 export interface BackhaulOpportunity {
   requestId: string;
@@ -150,7 +151,7 @@ export async function acceptBackhaul(
   } catch { /* fallback 0 */ }
 
   const fareShare = request.quotedPrice;
-  const driverNet = Math.round(fareShare * 0.85);
+  const driverNet = await driverNetForFare(fareShare);
 
   await prisma.tripMatch.create({
     data: {

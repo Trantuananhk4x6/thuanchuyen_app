@@ -1,4 +1,4 @@
-# Thuận Đường — Webapp Ghép Chuyến Xe Liên Tỉnh
+# Thuận Chuyến — Webapp Ghép Chuyến Xe Liên Tỉnh
 
 Next.js 14 + Supabase (PostgreSQL + PostGIS + Realtime) + Prisma ORM
 

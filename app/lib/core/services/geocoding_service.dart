@@ -14,7 +14,7 @@ class GeocodingService {
   final _dio = Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
-    headers: {'User-Agent': 'ThuanDuong/1.0 Flutter'},
+    headers: {'User-Agent': 'ThuanChuyen/1.0 Flutter'},
   ));
 
   Future<List<PlaceSuggestion>> search(String query) async {

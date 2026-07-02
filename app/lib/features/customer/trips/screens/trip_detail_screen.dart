@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_format.dart';
+import '../../../shared/widgets/app_map.dart';
 import '../../../shared/widgets/status_badge.dart';
 import '../providers/trips_provider.dart';
 
@@ -60,7 +64,10 @@ class _TripDetailState extends ConsumerState<TripDetailScreen> {
             Text('Không tải được chuyến', style: TextStyle(color: AppColors.textSecondary)),
           ]),
         ),
-        data: (trip) => ListView(
+        data: (detail) {
+          final trip  = detail.trip;
+          final stops = detail.stops;
+          return ListView(
           padding: const EdgeInsets.all(16),
           children: [
             // Status card
@@ -72,16 +79,48 @@ class _TripDetailState extends ConsumerState<TripDetailScreen> {
                   Text('#${trip.id.substring(trip.id.length - 8)}',
                     style: const TextStyle(color: AppColors.textMuted, fontSize: 12, fontFamily: 'monospace')),
                 ]),
-                if (trip.route != null) ...[
+                if (detail.firstPickup != null && detail.lastDropoff != null) ...[
                   const SizedBox(height: 16),
                   _RouteRow(
-                    origin: trip.route!.originName,
-                    dest:   trip.route!.destName,
+                    origin: detail.firstPickup!.address,
+                    dest:   detail.lastDropoff!.address,
                   ),
                 ],
               ]),
             ),
             const SizedBox(height: 12),
+
+            // Bản đồ lộ trình (các điểm đón/trả)
+            if (stops.isNotEmpty) ...[
+              AppMap(
+                height: 200,
+                markers: [
+                  for (final s in stops)
+                    MapMarkerData(
+                      point: LatLng(s.lat, s.lng),
+                      color: s.isPickup ? AppColors.info : AppColors.danger,
+                      icon:  s.isPickup ? Icons.my_location_rounded : Icons.flag_rounded,
+                    ),
+                ],
+                polyline: [for (final s in stops) LatLng(s.lat, s.lng)],
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            // Theo dõi tài xế (khi chuyến đang chạy)
+            if (trip.isOngoing && trip.driverProfile != null) ...[
+              ElevatedButton.icon(
+                onPressed: () => context.push('/customer/trips/${trip.id}/track'),
+                icon: const Icon(Icons.navigation_rounded, size: 18),
+                label: const Text('Theo dõi tài xế trực tiếp'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
 
             // Driver info
             if (trip.driverProfile != null)
@@ -206,7 +245,8 @@ class _TripDetailState extends ConsumerState<TripDetailScreen> {
               ),
             ],
           ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -254,8 +294,7 @@ class _TimeRow extends StatelessWidget {
         Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
         const Spacer(),
         Text(
-          '${time.hour.toString().padLeft(2,'0')}:${time.minute.toString().padLeft(2,'0')} '
-          '${time.day.toString().padLeft(2,'0')}/${time.month.toString().padLeft(2,'0')}/${time.year}',
+          AppDate.dateTime(time),
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
         ),
       ]),

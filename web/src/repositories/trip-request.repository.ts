@@ -10,18 +10,42 @@ export function findRequestById(id: string) {
   });
 }
 
-export function findRequestsByCustomer(customerId: string, status?: TripRequestStatus) {
-  return prisma.tripRequest.findMany({
-    where: { customerId, ...(status ? { status } : {}) },
-    include: {
-      matches: {
-        where: { status: "ACCEPTED" },
-        include: { driverProfile: { include: { user: true } } },
+export async function findRequestsByCustomer(
+  customerId: string,
+  status?: TripRequestStatus,
+  page = 1,
+  limit = 20,
+) {
+  const where: Prisma.TripRequestWhereInput = { customerId, ...(status ? { status } : {}) };
+  const [items, total] = await prisma.$transaction([
+    prisma.tripRequest.findMany({
+      where,
+      include: {
+        matches: {
+          where: { status: "ACCEPTED" },
+          include: {
+            // Chỉ lấy field cần hiển thị — tránh trả về cả User (gồm passwordHash) ra client.
+            driverProfile: {
+              select: {
+                vehiclePlate: true,
+                vehicleType: true,
+                rating: true,
+                user: { select: { fullName: true, phone: true } },
+              },
+            },
+          },
+        },
+        // Kèm trạng thái Trip để phân biệt chuyến đã HOÀN THÀNH (TripRequest.status
+        // không có COMPLETED — chuyến xong vẫn ở MATCHED).
+        tripPassenger: { select: { tripId: true, legStatus: true, trip: { select: { status: true } } } },
       },
-      tripPassenger: { select: { tripId: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.tripRequest.count({ where }),
+  ]);
+  return { items, total };
 }
 
 // ─── Write ────────────────────────────────────────────────────────────────────

@@ -17,15 +17,25 @@ const ipWindows = new Map<string, WindowEntry>();
 // Lazy cleanup runs at most once every 5 minutes
 let lastCleanup = 0;
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+// Trần số bản ghi — chống cạn RAM khi bị flood bằng IP giả (chính map này có thể
+// trở thành vector DoS nếu không giới hạn).
+const MAX_ENTRIES = 50_000;
 
 function maybeCleanup(): void {
   const now = Date.now();
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+  const overCapacity = ipWindows.size > MAX_ENTRIES;
+  // Dọn ngay khi quá tải, không chờ đủ 5 phút.
+  if (!overCapacity && now - lastCleanup < CLEANUP_INTERVAL_MS) return;
   lastCleanup = now;
   for (const [key, entry] of ipWindows.entries()) {
     if (now > entry.resetAt) {
       ipWindows.delete(key);
     }
+  }
+  // Vẫn quá tải sau khi dọn (flood IP giả) → xoá sạch để tránh OOM.
+  // Chấp nhận reset cửa sổ rate-limit, vẫn tốt hơn là sập tiến trình.
+  if (ipWindows.size > MAX_ENTRIES) {
+    ipWindows.clear();
   }
 }
 
@@ -90,4 +100,6 @@ export const IP_LIMITS = {
   api: { max: 300, windowMs: 60 * 1000 } satisfies LimitConfig,
   /** 20 booking requests per 10 minutes per IP */
   booking: { max: 20, windowMs: 10 * 60 * 1000 } satisfies LimitConfig,
+  /** 120 page loads per minute per IP — trần chống flood cho các trang (không phải /api) */
+  page: { max: 120, windowMs: 60 * 1000 } satisfies LimitConfig,
 } as const;

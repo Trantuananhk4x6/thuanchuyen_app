@@ -5,6 +5,7 @@ import { findDriverByUserId } from "@/repositories/driver.repository";
 import { prisma } from "@/lib/db/prisma";
 import { notify } from "@/lib/notifications/notification.service";
 import { findUserById } from "@/repositories/user.repository";
+import { driverNetForFare } from "@/repositories/pricing.repository";
 
 /**
  * POST /api/v1/driver/open-requests/:id/take
@@ -35,9 +36,21 @@ export async function POST(
   if (request.status !== "PENDING") return Errors.validation("Đơn này không còn khả dụng");
   if (request.expiresAt < new Date()) return Errors.validation("Đơn đã hết hạn");
   if (request.matches.length > 0) return Errors.validation("Đơn này đã được tài xế khác nhận");
+  if (request.seats > driver.seats) return Errors.validation("Yêu cầu vượt quá số chỗ của xe");
+
+  const driverNet = await driverNetForFare(request.quotedPrice);
 
   // Tất cả trong 1 transaction
-  const result = await prisma.$transaction(async (tx) => {
+  let result: { trip: { id: string }; passenger: { id: string } };
+  try {
+    result = await prisma.$transaction(async (tx) => {
+    // Nhận đơn có điều kiện (re-check trong DB) — chống 2 tài xế cùng nhận 1 đơn
+    const flip = await tx.tripRequest.updateMany({
+      where: { id: request.id, status: "PENDING" },
+      data:  { status: "MATCHED" },
+    });
+    if (flip.count !== 1) throw new Error("__TAKEN__");
+
     // Tạo Trip cho tài xế
     const trip = await tx.trip.create({
       data: {
@@ -56,7 +69,7 @@ export async function POST(
         driverProfileId: driver.id,
         detourKm:        0,
         fareShare:       request.quotedPrice,
-        driverNet:       Math.round(request.quotedPrice * 0.85),
+        driverNet,
         status:          "ACCEPTED",
         respondedAt:     new Date(),
         expiresAt:       new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -100,14 +113,14 @@ export async function POST(
       ],
     });
 
-    // Cập nhật TripRequest → MATCHED
-    await tx.tripRequest.update({
-      where: { id: request.id },
-      data:  { status: "MATCHED" },
-    });
-
     return { trip, passenger };
-  });
+    });
+  } catch (e) {
+    if ((e as Error).message === "__TAKEN__") {
+      return Errors.conflict("Đơn này đã được tài xế khác nhận");
+    }
+    throw e;
+  }
 
   // Thông báo khách hàng
   void (async () => {

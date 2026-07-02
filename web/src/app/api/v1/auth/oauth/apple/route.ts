@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
 
   // Verify Apple identity token
   let sub: string, email: string | undefined;
+  let emailIsVerified = false;
   try {
     const { payload } = await jwtVerify(parsed.data.identityToken, APPLE_JWKS, {
       issuer: "https://appleid.apple.com",
@@ -32,16 +33,21 @@ export async function POST(req: NextRequest) {
     });
     sub   = payload.sub as string;
     email = payload.email as string | undefined;
+    const ev = (payload as Record<string, unknown>).email_verified;
+    emailIsVerified = ev === true || ev === "true";
   } catch {
     return Errors.unauthorized("Apple token không hợp lệ hoặc đã hết hạn");
   }
+
+  // Chỉ khớp/link theo email khi email đã được xác minh (chống chiếm tài khoản).
+  const matchEmail = email && emailIsVerified;
 
   // Find or create user
   let user = await prisma.user.findFirst({
     where: {
       OR: [
         { accounts: { some: { provider: "apple", providerAccountId: sub } } },
-        ...(email ? [{ email }] : []),
+        ...(matchEmail ? [{ email }] : []),
       ],
     },
     select: { id: true, email: true, phone: true, fullName: true, avatarUrl: true, role: true, isBlocked: true },
@@ -55,7 +61,7 @@ export async function POST(req: NextRequest) {
         email:     email ?? null,
         fullName:  parsed.data.fullName ?? null,
         role:      parsed.data.role,
-        emailVerified: email ? new Date() : null,
+        emailVerified: matchEmail ? new Date() : null,
         accounts: {
           create: {
             type:              "oauth",

@@ -40,7 +40,7 @@ const TX_LABEL: Record<string, string> = {
 const TT_STYLE = {
   background: "rgba(15,23,42,.95)",
   border: "1px solid rgba(99,102,241,.3)",
-  borderRadius: 8, color: "#f1f5f9", fontSize: 12,
+  borderRadius: 8, color: "var(--text-primary)", fontSize: 12,
 };
 
 export default function DriverWalletPage() {
@@ -51,11 +51,13 @@ export default function DriverWalletPage() {
   const [submitting, setSubmitting] = useState(false);
   const [msg,  setMsg]  = useState<{ ok: boolean; text: string } | null>(null);
 
-  useEffect(() => {
+  const fetchWallet = () =>
     api.get<WalletData>("/driver/wallet")
       .then((r) => setData(r.data))
-      .catch(() => setData({ withdrawableBalance: 0, pendingBalance: 0, transactions: [], pendingReleases: [] }))
-      .finally(() => setLoading(false));
+      .catch(() => setData({ withdrawableBalance: 0, pendingBalance: 0, transactions: [], pendingReleases: [] }));
+
+  useEffect(() => {
+    fetchWallet().finally(() => setLoading(false));
   }, []);
 
   const withdraw = async (e: React.FormEvent) => {
@@ -71,6 +73,7 @@ export default function DriverWalletPage() {
       setMsg({ ok: true, text: "Yêu cầu rút tiền đã gửi! Admin sẽ xử lý trong 1–2 ngày làm việc." });
       setShowForm(false);
       setForm({ amount: "", bankName: "", bankAccountNo: "", bankAccountName: "" });
+      await fetchWallet();
     } catch (err) {
       setMsg({ ok: false, text: (err as Error).message });
     } finally { setSubmitting(false); }
@@ -78,7 +81,7 @@ export default function DriverWalletPage() {
 
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center", padding: 48 }}>
-      <span style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", animation: "spin .8s linear infinite", display: "inline-block" }}/>
+      <span style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", animation: "spin .8s linear infinite", display: "inline-block" }}/>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -111,7 +114,7 @@ export default function DriverWalletPage() {
           fontSize: 22, fontWeight: 800, color: "var(--text-primary)",
           display: "flex", alignItems: "center", gap: 10, marginBottom: 4,
         }}>
-          <WalletIcon size={22} color="#34d399"/> Ví & Thu nhập
+          <WalletIcon size={22} color="var(--brand-emerald)"/> Ví & Thu nhập
         </h1>
       </div>
 
@@ -122,7 +125,7 @@ export default function DriverWalletPage() {
           padding: "12px 16px", borderRadius: 12, marginBottom: 20,
           background: msg.ok ? "rgba(52,211,153,.1)" : "var(--danger-bg)",
           border: `1px solid ${msg.ok ? "rgba(52,211,153,.3)" : "var(--danger-border)"}`,
-          color: msg.ok ? "#34d399" : "var(--danger)", fontSize: 13,
+          color: msg.ok ? "var(--brand-emerald)" : "var(--danger)", fontSize: 13,
         }}>
           {msg.ok ? <CheckCircleIcon size={16} style={{ flexShrink:0, marginTop:1 }}/> : <AlertTriangleIcon size={16} style={{ flexShrink:0, marginTop:1 }}/>}
           {msg.text}
@@ -132,7 +135,7 @@ export default function DriverWalletPage() {
       {/* ── Stat cards ────────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }} className="wallet-stats">
         <StatCard
-          icon={<CoinIcon size={18} color="#34d399"/>}
+          icon={<CoinIcon size={18} color="var(--brand-emerald)"/>}
           label="Có thể rút" value={`${(data?.withdrawableBalance ?? 0).toLocaleString("vi-VN")}đ`}
           color="#34d399"
           action={
@@ -152,7 +155,7 @@ export default function DriverWalletPage() {
           }
         />
         <StatCard
-          icon={<ClockIcon size={18} color="#fbbf24"/>}
+          icon={<ClockIcon size={18} color="var(--brand-amber)"/>}
           label="Đang giữ" value={`${(data?.pendingBalance ?? 0).toLocaleString("vi-VN")}đ`}
           color="#fbbf24"
           sub={data?.pendingReleases[0]?.availableAt
@@ -161,7 +164,7 @@ export default function DriverWalletPage() {
           }
         />
         <StatCard
-          icon={<TrendingUpIcon size={18} color="#6366f1"/>}
+          icon={<TrendingUpIcon size={18} color="var(--brand-primary)"/>}
           label="Tổng doanh thu" value={`${totalEarnings.toLocaleString("vi-VN")}đ`}
           color="#6366f1"
           sub={`${txns.filter((t) => t.type === "TRIP_CREDIT").length} chuyến`}
@@ -176,7 +179,7 @@ export default function DriverWalletPage() {
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)", display: "flex", gap: 8, alignItems: "center" }}>
-              <WalletIcon size={16} color="#34d399"/> Yêu cầu rút tiền
+              <WalletIcon size={16} color="var(--brand-emerald)"/> Yêu cầu rút tiền
             </div>
             <button onClick={() => setShowForm(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 18 }}>✕</button>
           </div>
@@ -233,7 +236,7 @@ export default function DriverWalletPage() {
           display: "flex", alignItems: "center", gap: 8,
           borderBottom: "1px solid var(--border-subtle)",
         }}>
-          <ActivityIcon size={16} color="#34d399"/>
+          <ActivityIcon size={16} color="var(--brand-emerald)"/>
           <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>Thu nhập 14 ngày qua</span>
         </div>
         <div style={{ padding: "16px 8px 8px" }}>
@@ -241,17 +244,17 @@ export default function DriverWalletPage() {
             <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="gEarn" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#34d399" stopOpacity={.3}/>
-                  <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
+                  <stop offset="5%"  stopColor="var(--brand-emerald)" stopOpacity={.3}/>
+                  <stop offset="95%" stopColor="var(--brand-emerald)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,102,241,.07)"/>
-              <XAxis dataKey="date" tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false} interval={1}/>
-              <YAxis tick={{ fill: "#475569", fontSize: 10 }} axisLine={false} tickLine={false}
+              <XAxis dataKey="date" tick={{ fill: "var(--text-muted)", fontSize: 10 }} axisLine={false} tickLine={false} interval={1}/>
+              <YAxis tick={{ fill: "var(--text-muted)", fontSize: 10 }} axisLine={false} tickLine={false}
                 tickFormatter={(v: number) => v === 0 ? "0" : `${(v/1000).toFixed(0)}k`}/>
               <Tooltip contentStyle={TT_STYLE}
                 formatter={(v: unknown) => [Number(v).toLocaleString("vi-VN") + "đ", "Thu nhập"]}/>
-              <Area type="monotone" dataKey="thunhap" stroke="#34d399" strokeWidth={2.5}
+              <Area type="monotone" dataKey="thunhap" stroke="var(--brand-emerald)" strokeWidth={2.5}
                 fill="url(#gEarn)" dot={false}/>
             </AreaChart>
           </ResponsiveContainer>
@@ -268,7 +271,7 @@ export default function DriverWalletPage() {
           display: "flex", alignItems: "center", gap: 8,
           borderBottom: "1px solid var(--border-subtle)",
         }}>
-          <CoinIcon size={16} color="#6366f1"/>
+          <CoinIcon size={16} color="var(--brand-primary)"/>
           <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>Lịch sử giao dịch</span>
         </div>
         {txns.length === 0 ? (
@@ -290,7 +293,7 @@ export default function DriverWalletPage() {
                 }}>
                   {t.type === "TRIP_CREDIT" ? <TrendingUpIcon size={15} color={TX_COLOR[t.type]}/> :
                    t.type === "WITHDRAWAL"  ? <WalletIcon size={15} color={TX_COLOR[t.type]}/> :
-                                              <CoinIcon size={15} color={TX_COLOR[t.type] ?? "#94a3b8"}/>}
+                                              <CoinIcon size={15} color={TX_COLOR[t.type] ?? "var(--text-secondary)"}/>}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 1 }}>
@@ -301,7 +304,7 @@ export default function DriverWalletPage() {
                   </div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: t.amount > 0 ? "#34d399" : "#f87171" }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: t.amount > 0 ? "var(--brand-emerald)" : "var(--danger)" }}>
                     {t.amount > 0 ? "+" : ""}{t.amount.toLocaleString("vi-VN")}đ
                   </div>
                   <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>

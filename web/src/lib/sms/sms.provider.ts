@@ -26,7 +26,7 @@ class EsmsSmsProvider implements SmsProvider {
   }
 
   async sendOtp(phone: string, code: string) {
-    const url = "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_get";
+    const url = process.env.ESMS_API_URL ?? "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_get";
     const params = new URLSearchParams({
       ApiKey: this.apiKey,
       ApiSecret: this.apiSecret,

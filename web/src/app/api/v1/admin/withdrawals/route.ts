@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { ok, Errors } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/context";
-import { listWithdrawals } from "@/repositories/wallet.repository";
+import { listWithdrawals, withdrawalStats } from "@/repositories/wallet.repository";
 import { ListQuerySchema } from "@/validators/admin.validator";
 
 export async function GET(req: NextRequest) {
@@ -12,11 +12,15 @@ export async function GET(req: NextRequest) {
   const parsed = ListQuerySchema.safeParse(params);
   if (!parsed.success) return Errors.validation(parsed.error.errors[0].message);
 
-  const [items, total] = await listWithdrawals({
-    status: parsed.data.status,
-    page: parsed.data.page,
-    limit: parsed.data.limit,
-  });
+  const [[items, total], stats] = await Promise.all([
+    listWithdrawals({
+      status: parsed.data.status,
+      search: parsed.data.search,
+      page: parsed.data.page,
+      limit: parsed.data.limit,
+    }),
+    withdrawalStats(),
+  ]);
 
-  return ok({ items, total, page: parsed.data.page });
+  return ok({ items, total, page: parsed.data.page, stats });
 }

@@ -249,6 +249,7 @@ export async function completeStop(
   const stop = await findStopById(stopId);
   if (!stop || stop.tripId !== tripId) throw new Error("Không tìm thấy mốc");
   if (stop.status !== "PENDING") throw new Error("Mốc đã hoàn thành");
+  if (stop.order !== trip.currentStopIndex + 1) throw new Error("Phải hoàn tất các mốc theo thứ tự");
 
   await markStopDone(stopId);
 
@@ -283,6 +284,7 @@ export async function markNoShow(tripId: string, stopId: string, driverProfileId
 
   const stop = await findStopById(stopId);
   if (!stop || stop.tripId !== tripId || stop.type !== "PICKUP") throw new Error("Mốc không hợp lệ");
+  if (stop.order !== trip.currentStopIndex + 1) throw new Error("Phải xử lý các mốc theo thứ tự");
 
   await markStopSkipped(stopId);
 
@@ -340,6 +342,9 @@ export async function updateDriverLocation(
   lng: number,
   heading?: number,
 ) {
+  // Chống IDOR: chỉ tài xế của chuyến mới được phát vị trí lên kênh chuyến đó.
+  const trip = await prisma.trip.findUnique({ where: { id: tripId }, select: { driverProfileId: true } });
+  if (!trip || trip.driverProfileId !== driverProfileId) throw new Error("Không có quyền");
   await broadcastToTrip(tripId, "driver.location", { lat, lng, heading });
 }
 

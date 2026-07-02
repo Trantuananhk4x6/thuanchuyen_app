@@ -97,7 +97,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
   return (
     <button type="button" onClick={() => onChange(!on)}
       style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-      <div style={{ width: 40, height: 22, borderRadius: 11, background: on ? "#22d3ee" : "var(--bg-overlay)", border: `2px solid ${on ? "#22d3ee" : "var(--border-subtle)"}`, position: "relative", transition: "all .2s", flexShrink: 0 }}>
+      <div style={{ width: 40, height: 22, borderRadius: 11, background: on ? "var(--brand-secondary)" : "var(--bg-overlay)", border: `2px solid ${on ? "var(--brand-secondary)" : "var(--border-subtle)"}`, position: "relative", transition: "all .2s", flexShrink: 0 }}>
         <div style={{ position: "absolute", top: 2, left: on ? 18 : 2, width: 14, height: 14, borderRadius: "50%", background: on ? "#fff" : "var(--text-muted)", transition: "left .2s" }} />
       </div>
       {label && <span style={{ fontSize: 13, color: "var(--text-primary)" }}>{label}</span>}
@@ -359,7 +359,7 @@ export default function AdminPricingPage() {
                   <NumInput value={commissionPct} onChange={setCommissionPct} suffix="%" min={0} />
                 </Row>
                 <div style={{ background: "var(--bg-overlay)", borderRadius: 8, padding: "12px 14px", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
-                  <strong style={{ color: "var(--text-primary)" }}>Ví dụ:</strong> Chuyến 100,000 VND → Nền tảng nhận <strong style={{ color: "#22d3ee" }}>{commissionPct.toLocaleString()}%</strong> = {(100000 * commissionPct / 100).toLocaleString()} VND · Tài xế nhận {(100000 * (1 - commissionPct / 100)).toLocaleString()} VND
+                  <strong style={{ color: "var(--text-primary)" }}>Ví dụ:</strong> Chuyến 100,000 VND → Nền tảng nhận <strong style={{ color: "var(--brand-secondary)" }}>{commissionPct.toLocaleString()}%</strong> = {(100000 * commissionPct / 100).toLocaleString()} VND · Tài xế nhận {(100000 * (1 - commissionPct / 100)).toLocaleString()} VND
                 </div>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function AdminPricingPage() {
                   ].map((item, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "var(--bg-overlay)", borderRadius: 8, border: "1px solid var(--border-subtle)" }}>
                       <span style={{ fontSize: 13, color: "var(--text-primary)" }}>{item.label}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#22d3ee" }}>+ {item.bonus}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--brand-secondary)" }}>+ {item.bonus}</span>
                     </div>
                   ))}
                 </div>
@@ -423,7 +423,7 @@ export default function AdminPricingPage() {
                   <TextInput value={surge.nightEnd} onChange={s("nightEnd")} placeholder="05:00" />
                 </Row>
                 <div style={{ background: "var(--bg-overlay)", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "var(--text-muted)" }}>
-                  Khung giờ đêm: <strong style={{ color: "#fbbf24" }}>{surge.nightStart} – {surge.nightEnd}</strong> · Hệ số: <strong style={{ color: "#fbbf24" }}>{surge.nightSurchargeMultiplier}x</strong> (= +{Math.round((surge.nightSurchargeMultiplier - 1) * 100)}%)
+                  Khung giờ đêm: <strong style={{ color: "var(--brand-amber)" }}>{surge.nightStart} – {surge.nightEnd}</strong> · Hệ số: <strong style={{ color: "var(--brand-amber)" }}>{surge.nightSurchargeMultiplier}x</strong> (= +{Math.round((surge.nightSurchargeMultiplier - 1) * 100)}%)
                 </div>
               </div>
             </div>
@@ -440,7 +440,7 @@ export default function AdminPricingPage() {
                   <TextInput value={surge.peakHours} onChange={s("peakHours")} placeholder="07:00-09:00,17:00-19:00" />
                 </Row>
                 <div style={{ background: "var(--bg-overlay)", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
-                  Cao điểm: <strong style={{ color: "#f97316" }}>{surge.peakHours}</strong> · Hệ số: <strong style={{ color: "#f97316" }}>{surge.peakSurchargeMultiplier}x</strong>
+                  Cao điểm: <strong style={{ color: "var(--brand-amber)" }}>{surge.peakHours}</strong> · Hệ số: <strong style={{ color: "var(--brand-amber)" }}>{surge.peakSurchargeMultiplier}x</strong>
                 </div>
               </div>
             </div>
@@ -459,7 +459,7 @@ export default function AdminPricingPage() {
                   return (
                     <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-subtle)" }}>
                       <span style={{ fontSize: 13 }}>{label}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: mult > 1 ? "#f97316" : "var(--text-primary)" }}>{Math.round(total).toLocaleString()} VND</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: mult > 1 ? "var(--brand-amber)" : "var(--text-primary)" }}>{Math.round(total).toLocaleString()} VND</span>
                     </div>
                   );
                 })}

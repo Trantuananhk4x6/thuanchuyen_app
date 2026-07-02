@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
@@ -85,6 +86,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     );
   }
 
+  void _showHelp(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24, borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Hướng dẫn nhanh',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 14),
+            ...const [
+              ['🔑', 'Đăng nhập nhanh', 'Dùng Google, Facebook hoặc Apple — chỉ một chạm, không cần nhớ mật khẩu.'],
+              ['✉️', 'OTP qua Email', 'Nhập email, nhận mã 6 số và xác nhận để đăng nhập an toàn.'],
+              ['🚗', 'Khách hàng', 'Đăng ký "Đặt xe" để tạo chuyến và ghép tài xế cùng tuyến, tiết kiệm chi phí.'],
+              ['💼', 'Tài xế', 'Đăng ký "Chạy xe", hoàn tất KYC rồi bắt đầu nhận chuyến và kiếm thêm thu nhập.'],
+            ].map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(e[0], style: const TextStyle(fontSize: 20)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(e[1], style: const TextStyle(
+                                color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text(e[2], style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Đã hiểu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth     = ref.watch(authProvider);
@@ -135,7 +207,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Header
-                    _Header(isRegister: _isRegister, isDriver: _tab == _Tab.registerDriver),
+                    _Header(isRegister: _isRegister, isDriver: _tab == _Tab.registerDriver, pulse: _pulse),
                     const SizedBox(height: 20),
 
                     // Error banner
@@ -152,6 +224,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           loading: isLoading,
                           onTap: () => ref.read(authProvider.notifier).loginGoogle(),
                           icon: _GoogleLogo(),
+                        ),
+                        const SizedBox(height: 10),
+                        _SocialButton(
+                          label: 'Tiếp tục với Facebook',
+                          loading: isLoading,
+                          onTap: () => ref.read(authProvider.notifier).loginFacebook(),
+                          icon: const Icon(Icons.facebook, color: Color(0xFF1877F2), size: 22),
                         ),
                         if (Platform.isIOS || Platform.isMacOS) ...[
                           const SizedBox(height: 10),
@@ -328,7 +407,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     const SizedBox(height: 20),
                     Center(
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () => _showHelp(context),
                         child: const Text(
                           '📖 Xem hướng dẫn sử dụng',
                           style: TextStyle(color: AppColors.primary, fontSize: 12),
@@ -418,36 +497,73 @@ class _Card extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.isRegister, required this.isDriver});
+  const _Header({required this.isRegister, required this.isDriver, required this.pulse});
   final bool isRegister;
   final bool isDriver;
+  final Animation<double> pulse;
+
   @override
   Widget build(BuildContext context) => Column(children: [
-    // Logo
-    Container(
-      width: 64, height: 64,
-      decoration: BoxDecoration(
-        gradient: AppColors.gradPrimary,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 20)],
-      ),
-      child: const Center(
-        child: Text('TC', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 22)),
+    // ── Logo với hào quang neon "thở" theo animation ─────────────────────────
+    AnimatedBuilder(
+      animation: pulse,
+      builder: (_, child) {
+        final t = pulse.value;
+        return Container(
+          width: 96, height: 96,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.40 + t * 0.28),
+                blurRadius: 26 + t * 18, spreadRadius: 1,
+              ),
+              BoxShadow(
+                color: AppColors.secondary.withValues(alpha: 0.26 + t * 0.22),
+                blurRadius: 40 + t * 22, spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: Image.asset(
+          'assets/images/logo.png',
+          width: 96, height: 96, fit: BoxFit.cover,
+        ),
       ),
     ),
-    const SizedBox(height: 12),
-    Text(
-      isRegister
-          ? (isDriver ? 'Trở thành Tài xế' : 'Tạo tài khoản')
-          : 'Thuận Chuyến',
-      style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 18),
-    ),
-    const SizedBox(height: 4),
+    const SizedBox(height: 18),
+
+    // ── Wordmark gradient + glow ─────────────────────────────────────────────
+    if (!isRegister)
+      ShaderMask(
+        blendMode: BlendMode.srcIn,
+        shaderCallback: (r) => const LinearGradient(
+          colors: [Color(0xFFA5B4FC), Color(0xFF67E8F9)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        ).createShader(r),
+        child: Text(
+          'Thuận Chuyến',
+          style: GoogleFonts.sora(
+            color: Colors.white, fontWeight: FontWeight.w800, fontSize: 28, letterSpacing: 0.5,
+            shadows: [Shadow(color: AppColors.primary.withValues(alpha: 0.55), blurRadius: 22)],
+          ),
+        ),
+      )
+    else
+      Text(
+        isDriver ? 'Trở thành Tài xế' : 'Tạo tài khoản',
+        style: GoogleFonts.sora(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 23),
+      ),
+    const SizedBox(height: 6),
     Text(
       isRegister
           ? (isDriver ? 'Bắt đầu kiếm thêm thu nhập ngay hôm nay' : 'Đặt chuyến nhanh, giá tốt mỗi ngày')
           : 'Chào mừng trở lại',
-      style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+      style: GoogleFonts.beVietnamPro(color: AppColors.textMuted, fontSize: 12.5),
     ),
   ]);
 }

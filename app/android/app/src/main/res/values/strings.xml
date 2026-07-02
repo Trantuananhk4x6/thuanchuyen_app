@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Thuận Chuyến</string>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         FACEBOOK LOGIN — THAY 3 GIÁ TRỊ DƯỚI ĐÂY BẰNG GIÁ TRỊ THẬT
+         Lấy tại: https://developers.facebook.com → App của bạn → Settings → Basic
+           • facebook_app_id        = App ID  (dãy số)
+           • facebook_client_token  = Client Token (mục Settings → Advanced → Security)
+           • fb_login_protocol_scheme = "fb" + App ID   (ví dụ App ID 1234 → fb1234)
+         Xem hướng dẫn đầy đủ trong app/SETUP_SOCIAL_LOGIN.md
+         ════════════════════════════════════════════════════════════════════ -->
+    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
+    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
+    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
+</resources>

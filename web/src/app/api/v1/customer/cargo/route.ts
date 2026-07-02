@@ -3,6 +3,7 @@ import { ok, created, Errors } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/context";
 import { createCargo, quoteCargo } from "@/services/cargo.service";
 import { findCargoBySender, cancelCargo } from "@/repositories/cargo.repository";
+import { notify } from "@/lib/notifications/notification.service";
 import { z } from "zod";
 
 const CreateCargoSchema = z.object({
@@ -45,6 +46,19 @@ export async function POST(req: NextRequest) {
   const result = await createCargo({
     senderId: auth.payload.userId,
     ...parsed.data,
+  });
+
+  // Thông báo cho khách: đặt gửi hàng thành công (email + Zalo ZNS). Fire-and-forget.
+  void notify({
+    userId: auth.payload.userId,
+    event: "CARGO_REQUEST_CREATED",
+    templateData: {
+      pickup: parsed.data.pickupAddress,
+      dropoff: parsed.data.dropoffAddress,
+      receiverName: parsed.data.receiverName,
+      weightKg: String(parsed.data.weightKg),
+      price: result.quotedPrice.toLocaleString("vi-VN"),
+    },
   });
 
   return created(result);

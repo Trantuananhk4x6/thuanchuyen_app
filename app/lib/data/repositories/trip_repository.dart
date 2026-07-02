@@ -1,5 +1,6 @@
 import '../api/api_client.dart';
 import '../models/trip.dart';
+import '../models/trip_detail.dart';
 import '../../core/constants/api.dart';
 
 class TripRepository {
@@ -18,10 +19,19 @@ class TripRepository {
     );
   }
 
-  Future<Trip> getTrip(String id) {
+  /// GET /customer/trips/{id} → {trip, stops, driverProfile, ...}
+  Future<TripDetail> getCustomerTripDetail(String id) {
     return _api.get(
-      ApiConstants.path(ApiConstants.tripById, {'id': id}),
-      fromJson: (d) => Trip.fromJson(d as Map<String, dynamic>),
+      ApiConstants.path(ApiConstants.customerTripDetail, {'id': id}),
+      fromJson: (d) => TripDetail.fromJson(d as Map<String, dynamic>),
+    );
+  }
+
+  /// GET /customer/trips/{id}/driver-location → {status, location:{lat,lng,updatedAt}|null}
+  Future<DriverLocation> getDriverLocation(String tripId) {
+    return _api.get(
+      ApiConstants.path(ApiConstants.customerDriverLocation, {'id': tripId}),
+      fromJson: (d) => DriverLocation.fromJson(d as Map<String, dynamic>),
     );
   }
 

@@ -1,8 +1,18 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { ok, Errors } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/context";
 import { prisma } from "@/lib/db/prisma";
 import { buildStopsForTrip } from "@/services/trip.service";
+
+const ConsolidateSchema = z
+  .object({
+    driverProfileId: z.string().min(1).optional(),
+    tripIds: z.array(z.string().min(1)).optional(),
+  })
+  .refine((d) => !!d.driverProfileId || (d.tripIds != null && d.tripIds.length >= 2), {
+    message: "Cần truyền driverProfileId hoặc mảng tripIds (ít nhất 2)",
+  });
 
 /**
  * POST /api/v1/admin/trips/consolidate
@@ -14,15 +24,11 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req, "ADMIN");
   if ("error" in auth) return auth.error;
 
-  const body = await req.json().catch(() => ({}));
-  const { driverProfileId, tripIds } = body as {
-    driverProfileId?: string;
-    tripIds?: string[];
-  };
+  const body = await req.json().catch(() => null);
+  const parsed = ConsolidateSchema.safeParse(body);
+  if (!parsed.success) return Errors.validation(parsed.error.errors[0].message);
 
-  if (!driverProfileId && (!tripIds || tripIds.length < 2)) {
-    return Errors.validation("Cần truyền driverProfileId hoặc mảng tripIds (ít nhất 2)");
-  }
+  const { driverProfileId, tripIds } = parsed.data;
 
   // Tìm các trips cần gộp
   const where = driverProfileId
@@ -68,11 +74,6 @@ export async function POST(req: NextRequest) {
           where: { id: p.id },
           data: { tripId: primaryTrip.id },
         });
-        // Cập nhật TripMatch (nếu có) liên kết với request này
-        await tx.tripMatch.updateMany({
-          where: { requestId: p.requestId, driverProfileId: driverProfId },
-          data: {},
-        });
       }
       // Xóa stops cũ của source trip
       await tx.tripStop.deleteMany({ where: { tripId: src.id } });
@@ -90,8 +91,13 @@ export async function POST(req: NextRequest) {
     await tx.tripStop.deleteMany({ where: { tripId: primaryTrip.id } });
   });
 
-  // Rebuild stops sau transaction
-  await buildStopsForTrip(primaryTrip.id, driverProfId).catch(() => {});
+  // Rebuild stops sau transaction (phải sau commit để thấy hết passengers đã dời sang)
+  let stopsRebuildFailed = false;
+  try {
+    await buildStopsForTrip(primaryTrip.id, driverProfId);
+  } catch {
+    stopsRebuildFailed = true; // báo admin để dựng lại lộ trình, tránh trip 0 điểm dừng âm thầm
+  }
 
   const merged = await prisma.trip.findUnique({
     where: { id: primaryTrip.id },
@@ -102,5 +108,6 @@ export async function POST(req: NextRequest) {
     mergedTripId: primaryTrip.id,
     cancelledTripIds: sourceTrips.map((t) => t.id),
     totalPassengers: merged?.passengers.length ?? 0,
+    stopsRebuildFailed,
   });
 }

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "23367337175",
+    "project_id": "dsadsadsad-fb147",
+    "storage_bucket": "dsadsadsad-fb147.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23367337175:android:c24f0fce52a12abdf5dc92",
+        "android_client_info": {
+          "package_name": "vn.thuanduong.thuanduong_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "23367337175-karfplar8nq6gi4nl9dgvmb1u6bq9de5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1_KMjrUotVis_iOdCxtsVsv7913HLzas"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "23367337175-karfplar8nq6gi4nl9dgvmb1u6bq9de5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

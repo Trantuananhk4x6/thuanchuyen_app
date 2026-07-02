@@ -5,12 +5,16 @@ import { ok, Errors } from "@/lib/api/response";
 import { prisma } from "@/lib/db/prisma";
 import { getClientIp } from "@/lib/security/ip";
 import { checkBruteForce, recordLoginAttempt } from "@/lib/security/brute-force";
+import { consumeEmailOtp } from "@/lib/auth/email-otp";
 
 const RegisterSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   password: z.string().min(8, "Mật khẩu tối thiểu 8 ký tự"),
   fullName: z.string().min(2).max(100).optional(),
   role: z.enum(["CUSTOMER", "DRIVER"]).default("CUSTOMER"),
+  // Mã OTP email để xác thực. Web luôn gửi kèm (bắt buộc ở UI); để optional nhằm
+  // giữ tương thích với client cũ (app mobile dùng luồng email-OTP/social riêng).
+  otp: z.string().regex(/^\d{6}$/, "Mã OTP gồm 6 chữ số").optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -34,6 +38,17 @@ export async function POST(req: NextRequest) {
     return Errors.conflict("Email đã được sử dụng");
   }
 
+  // Xác thực email bằng OTP (nếu client gửi kèm). Web bắt buộc bước này.
+  let emailVerified: Date | null = null;
+  if (parsed.data.otp) {
+    const otpResult = await consumeEmailOtp(parsed.data.email, parsed.data.otp);
+    if (!otpResult.ok) {
+      await recordLoginAttempt(ip, parsed.data.email, false);
+      return Errors.unauthorized(otpResult.reason);
+    }
+    emailVerified = new Date();
+  }
+
   const passwordHash = await hash(parsed.data.password, 12);
 
   const user = await prisma.user.create({
@@ -42,6 +57,7 @@ export async function POST(req: NextRequest) {
       passwordHash,
       fullName: parsed.data.fullName,
       role: parsed.data.role,
+      emailVerified,
     },
     select: { id: true, email: true, fullName: true, role: true },
   });

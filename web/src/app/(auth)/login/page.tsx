@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db/prisma";
 import { DEFAULT_LANDING_CONFIG } from "@/lib/landing/defaults";
 import type { LandingConfigData, BlogPostSummary, EventSummary, SectionConfig } from "@/types/landing";
+import { normalizeTheme } from "@/lib/landing/theme";
 import LoginForm from "./_LoginForm";
 import LandingNav from "./_LandingNav";
 import BelowFold from "./_BelowFold";
+import ThemeStyle from "./_ThemeStyle";
 
 export const revalidate = 60; // ISR — rebuild every 60 s, or on admin save
 
@@ -40,6 +42,7 @@ async function getLandingConfig(): Promise<LandingConfigData> {
     });
 
     return {
+      theme:         normalizeTheme((row as { theme?: unknown }).theme),
       navBrand:      row.navBrand,
       navItems:      row.navItems as LandingConfigData["navItems"],
       heroBadge:     row.heroBadge,
@@ -116,9 +119,15 @@ async function getDynamicContent(sections: SectionConfig[]) {
 
 /* ── Page ──────────────────────────────────────────────────────────── */
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const config = await getLandingConfig();
   const { posts, events } = await getDynamicContent(config.sections);
+
+  const preview = searchParams?.preview === "1";
 
   const visibleSections = config.sections
     .filter((s) => s.visible)
@@ -126,6 +135,9 @@ export default async function LoginPage() {
 
   return (
     <>
+      {/* Theme tokens (CSS variables) — re-skins the page; live-updates in preview */}
+      <ThemeStyle theme={config.theme} preview={preview} />
+
       {/* Sticky nav — rendered outside the hero viewport unit */}
       <LandingNav
         brand={config.navBrand}

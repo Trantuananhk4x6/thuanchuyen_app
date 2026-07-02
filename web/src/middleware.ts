@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 import { getClientIp } from "@/lib/security/ip";
 import { applySecurityHeaders } from "@/lib/security/headers";
 import { checkIpLimit, IP_LIMITS } from "@/lib/security/ip-limiter";
-import { isKnownBot, isSuspiciousPath } from "@/lib/security/threat";
+import { isKnownBot, isSuspiciousPath, threatScore } from "@/lib/security/threat";
 
 // ─── In-memory blocked-IP cache ───────────────────────────────────────────────
 // We cannot call Prisma from Edge runtime, so blocked IPs are stored here.
@@ -95,6 +95,12 @@ export async function middleware(req: NextRequest) {
     return blockedResponse("Forbidden", 403);
   }
 
+  // 2b. Chấm điểm mối đe doạ — bắt cả SQLi/XSS/path-traversal trong QUERY STRING
+  //     (Prisma đã chống SQLi ở tầng DB; đây là lớp chặn sớm, giảm tải cho route/DB).
+  if (threatScore(req) >= 80) {
+    return blockedResponse("Forbidden", 403);
+  }
+
   // 3. Refresh blocked-IP cache (lazy, max once per 5 min) and check IP block
   await refreshBlockedIpCache(req);
   const block = getBlockEntry(ip);
@@ -102,27 +108,41 @@ export async function middleware(req: NextRequest) {
     return blockedResponse(`Blocked: ${block.reason}`, 403);
   }
 
-  // 4. IP-based rate limiting
-  if (pathname.startsWith("/api/v1/auth/")) {
-    const result = checkIpLimit(ip, "login", IP_LIMITS.login.max, IP_LIMITS.login.windowMs);
-    if (!result.allowed) {
-      const res = blockedResponse("Quá nhiều yêu cầu xác thực, thử lại sau.", 429);
-      res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
-      return res;
-    }
-  } else if (pathname === "/api/v1/customer/trip-requests") {
-    const result = checkIpLimit(ip, "booking", IP_LIMITS.booking.max, IP_LIMITS.booking.windowMs);
-    if (!result.allowed) {
-      const res = blockedResponse("Quá nhiều yêu cầu đặt xe, thử lại sau.", 429);
-      res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
-      return res;
-    }
-  } else if (pathname.startsWith("/api/")) {
-    const result = checkIpLimit(ip, "api", IP_LIMITS.api.max, IP_LIMITS.api.windowMs);
-    if (!result.allowed) {
-      const res = blockedResponse("Quá nhiều yêu cầu API, thử lại sau.", 429);
-      res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
-      return res;
+  // 4. IP-based rate limiting — CHỈ áp khi chạy production (web thật), chống spam.
+  //    Localhost (`next dev`) → NODE_ENV='development' → BỎ QUA (test thoải mái, không 429 giả).
+  //    Deploy/build → NODE_ENV='production' → BẬT. NODE_ENV do Next tự đặt, không cấu hình tay,
+  //    không client nào spoof được (an toàn hơn dựa vào APP_ENV).
+  if (process.env.NODE_ENV === "production") {
+    if (pathname.startsWith("/api/v1/auth/")) {
+      const result = checkIpLimit(ip, "login", IP_LIMITS.login.max, IP_LIMITS.login.windowMs);
+      if (!result.allowed) {
+        const res = blockedResponse("Quá nhiều yêu cầu xác thực, thử lại sau.", 429);
+        res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
+        return res;
+      }
+    } else if (pathname === "/api/v1/customer/trip-requests" && req.method === "POST") {
+      // Chỉ giới hạn khi TẠO đơn (POST). Xem danh sách (GET) KHÔNG tính là "đặt xe".
+      const result = checkIpLimit(ip, "booking", IP_LIMITS.booking.max, IP_LIMITS.booking.windowMs);
+      if (!result.allowed) {
+        const res = blockedResponse("Quá nhiều yêu cầu đặt xe, thử lại sau.", 429);
+        res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
+        return res;
+      }
+    } else if (pathname.startsWith("/api/")) {
+      const result = checkIpLimit(ip, "api", IP_LIMITS.api.max, IP_LIMITS.api.windowMs);
+      if (!result.allowed) {
+        const res = blockedResponse("Quá nhiều yêu cầu API, thử lại sau.", 429);
+        res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
+        return res;
+      }
+    } else {
+      // Trang (không phải /api): trần chống flood theo IP
+      const result = checkIpLimit(ip, "page", IP_LIMITS.page.max, IP_LIMITS.page.windowMs);
+      if (!result.allowed) {
+        const res = blockedResponse("Quá nhiều yêu cầu, thử lại sau.", 429);
+        res.headers.set("Retry-After", String(Math.ceil((result.resetAt - Date.now()) / 1000)));
+        return res;
+      }
     }
   }
 

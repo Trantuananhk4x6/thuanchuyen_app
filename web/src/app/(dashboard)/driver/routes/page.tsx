@@ -24,9 +24,9 @@ interface Route {
 }
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  ACTIVE:    { label: "Hoạt động", color:"#34d399", bg:"rgba(52,211,153,.12)", border:"rgba(52,211,153,.3)" },
-  PAUSED:    { label: "Tạm dừng",  color:"#fbbf24", bg:"rgba(251,191,36,.12)", border:"rgba(251,191,36,.3)" },
-  COMPLETED: { label: "Hoàn thành",color:"#94a3b8", bg:"rgba(148,163,184,.12)",border:"rgba(148,163,184,.3)" },
+  ACTIVE:    { label: "Hoạt động", color:"var(--brand-emerald)", bg:"rgba(52,211,153,.12)", border:"rgba(52,211,153,.3)" },
+  PAUSED:    { label: "Tạm dừng",  color:"var(--brand-amber)", bg:"rgba(251,191,36,.12)", border:"rgba(251,191,36,.3)" },
+  COMPLETED: { label: "Hoàn thành",color:"var(--text-secondary)", bg:"rgba(148,163,184,.12)",border:"rgba(148,163,184,.3)" },
 };
 
 interface FormState {
@@ -114,7 +114,7 @@ export default function DriverRoutesPage() {
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
-            <RouteIcon size={22} color="#22d3ee"/> Lộ trình của tôi
+            <RouteIcon size={22} color="var(--brand-secondary)"/> Lộ trình của tôi
           </h1>
           <p style={{ color:"var(--text-muted)", fontSize:13 }}>{items.length} lộ trình đã tạo</p>
         </div>
@@ -147,7 +147,7 @@ export default function DriverRoutesPage() {
       )}
       {success && (
         <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderRadius:10, marginBottom:16,
-          background:"rgba(52,211,153,.1)", border:"1px solid rgba(52,211,153,.3)", color:"#34d399", fontSize:13 }}>
+          background:"rgba(52,211,153,.1)", border:"1px solid rgba(52,211,153,.3)", color:"var(--brand-emerald)", fontSize:13 }}>
           <CheckCircleIcon size={13}/> {success}
         </div>
       )}
@@ -178,11 +178,11 @@ export default function DriverRoutesPage() {
                   value={form.originAddress}
                   onChange={(v) => setForm((f) => ({ ...f, originAddress: v, originLat: null, originLng: null }))}
                   onSelect={(r: PlaceResult) => setForm((f) => ({ ...f, originAddress: r.address, originLat: r.lat, originLng: r.lng }))}
-                  icon={<MapPinIcon size={15} color="#22d3ee"/>}
+                  icon={<MapPinIcon size={15} color="var(--brand-secondary)"/>}
                 />
                 {form.originLat && (
-                  <div style={{ fontSize:10, color:"#22d3ee", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
-                    <CheckCircleIcon size={10} color="#22d3ee"/>
+                  <div style={{ fontSize:10, color:"var(--brand-secondary)", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
+                    <CheckCircleIcon size={10} color="var(--brand-secondary)"/>
                     {form.originLat.toFixed(5)}, {form.originLng?.toFixed(5)}
                   </div>
                 )}
@@ -196,11 +196,11 @@ export default function DriverRoutesPage() {
                   value={form.destAddress}
                   onChange={(v) => setForm((f) => ({ ...f, destAddress: v, destLat: null, destLng: null }))}
                   onSelect={(r: PlaceResult) => setForm((f) => ({ ...f, destAddress: r.address, destLat: r.lat, destLng: r.lng }))}
-                  icon={<MapPinIcon size={15} color="#f472b6"/>}
+                  icon={<MapPinIcon size={15} color="var(--brand-pink)"/>}
                 />
                 {form.destLat && (
-                  <div style={{ fontSize:10, color:"#f472b6", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
-                    <CheckCircleIcon size={10} color="#f472b6"/>
+                  <div style={{ fontSize:10, color:"var(--brand-pink)", marginTop:4, display:"flex", alignItems:"center", gap:4 }}>
+                    <CheckCircleIcon size={10} color="var(--brand-pink)"/>
                     {form.destLat.toFixed(5)}, {form.destLng?.toFixed(5)}
                   </div>
                 )}
@@ -223,7 +223,7 @@ export default function DriverRoutesPage() {
                   Số ghế trống
                 </label>
                 <div style={{ position:"relative" }}>
-                  <SeatIcon size={14} color="#6366f1" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}/>
+                  <SeatIcon size={14} color="var(--brand-primary)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}/>
                   <input type="number" min={1} max={45} value={form.availableSeats}
                     onChange={(e) => setForm((f) => ({ ...f, availableSeats: Number(e.target.value) }))}
                     style={{ width:"100%", padding:"11px 12px 11px 36px", background:"var(--bg-overlay)", border:"1px solid var(--border-subtle)",
@@ -235,7 +235,7 @@ export default function DriverRoutesPage() {
                   Detour tối đa (km)
                 </label>
                 <div style={{ position:"relative" }}>
-                  <RulerIcon size={14} color="#a78bfa" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}/>
+                  <RulerIcon size={14} color="var(--brand-violet)" style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}/>
                   <input type="number" min={0} max={200} value={form.maxDetourKm}
                     onChange={(e) => setForm((f) => ({ ...f, maxDetourKm: Number(e.target.value) }))}
                     style={{ width:"100%", padding:"11px 12px 11px 36px", background:"var(--bg-overlay)", border:"1px solid var(--border-subtle)",
@@ -253,7 +253,7 @@ export default function DriverRoutesPage() {
               marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between",
             }}>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                <PackageIcon size={18} color={form.allowCargo ? "#fbbf24" : "var(--text-muted)"}/>
+                <PackageIcon size={18} color={form.allowCargo ? "var(--brand-amber)" : "var(--text-muted)"}/>
                 <div>
                   <div style={{ fontWeight:600, fontSize:13, color:"var(--text-primary)" }}>Nhận hàng hoá</div>
                   <div style={{ fontSize:11, color:"var(--text-muted)" }}>Tăng thu nhập bằng cách nhận thêm hàng gửi</div>
@@ -317,7 +317,7 @@ export default function DriverRoutesPage() {
           background:"rgba(251,191,36,.06)", border:"1px solid rgba(251,191,36,.25)", borderRadius:18,
         }}>
           <div style={{ fontSize:32, marginBottom:12 }}>🪪</div>
-          <div style={{ fontSize:16, fontWeight:700, color:"#fbbf24", marginBottom:6 }}>Chưa có hồ sơ tài xế</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"var(--brand-amber)", marginBottom:6 }}>Chưa có hồ sơ tài xế</div>
           <div style={{ fontSize:13, color:"var(--text-muted)", marginBottom:20, lineHeight:1.6 }}>
             Bạn cần hoàn thành đăng ký tài xế và được admin duyệt trước khi tạo lộ trình.
           </div>
@@ -332,7 +332,7 @@ export default function DriverRoutesPage() {
       {/* Route list */}
       {!noProfile && loading ? (
         <div style={{ display:"flex", justifyContent:"center", padding:48 }}>
-          <div style={{ width:32, height:32, borderRadius:"50%", border:"3px solid rgba(34,211,238,.2)", borderTopColor:"#22d3ee", animation:"spin .8s linear infinite" }}/>
+          <div style={{ width:32, height:32, borderRadius:"50%", border:"3px solid rgba(34,211,238,.2)", borderTopColor:"var(--brand-secondary)", animation:"spin .8s linear infinite" }}/>
         </div>
       ) : !noProfile && items.length === 0 ? (
         <div style={{ textAlign:"center", padding:"48px 20px", background:"var(--bg-surface)", border:"1px dashed var(--border-subtle)", borderRadius:18 }}>
@@ -366,15 +366,15 @@ export default function DriverRoutesPage() {
                   background:"var(--bg-elevated)", display:"flex", alignItems:"center", justifyContent:"space-between",
                 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <SeatIcon size={13} color="#6366f1"/>
+                    <SeatIcon size={13} color="var(--brand-primary)"/>
                     <span style={{ fontSize:12, fontWeight:600, color:"var(--text-secondary)" }}>{r.availableSeats} ghế</span>
                     <span style={{ width:4, height:4, borderRadius:"50%", background:"var(--border-medium)" }}/>
-                    <RulerIcon size={12} color="#a78bfa"/>
+                    <RulerIcon size={12} color="var(--brand-violet)"/>
                     <span style={{ fontSize:12, color:"var(--text-muted)" }}>detour ≤{r.maxDetourKm} km</span>
                     {r.allowCargo && (
                       <>
                         <span style={{ width:4, height:4, borderRadius:"50%", background:"var(--border-medium)" }}/>
-                        <PackageIcon size={12} color="#fbbf24"/>
+                        <PackageIcon size={12} color="var(--brand-amber)"/>
                         <span style={{ fontSize:12, color:"var(--text-muted)" }}>
                           {r.cargoCapacityKg ? `≤${r.cargoCapacityKg}kg` : "hàng"}
                         </span>
@@ -391,17 +391,17 @@ export default function DriverRoutesPage() {
                   {/* Route */}
                   <div style={{ background:"var(--bg-overlay)", borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
                     <div style={{ display:"flex", gap:10, marginBottom:8 }}>
-                      <MapPinIcon size={14} color="#22d3ee" style={{ flexShrink:0, marginTop:2 }}/>
+                      <MapPinIcon size={14} color="var(--brand-secondary)" style={{ flexShrink:0, marginTop:2 }}/>
                       <div>
-                        <div style={{ fontSize:10, color:"#22d3ee", fontWeight:700, textTransform:"uppercase", letterSpacing:.4, marginBottom:1 }}>Xuất phát</div>
+                        <div style={{ fontSize:10, color:"var(--brand-secondary)", fontWeight:700, textTransform:"uppercase", letterSpacing:.4, marginBottom:1 }}>Xuất phát</div>
                         <div style={{ fontSize:13, color:"var(--text-primary)", fontWeight:500 }}>{r.originAddress}</div>
                       </div>
                     </div>
                     <div style={{ width:2, height:10, background:"var(--border-medium)", margin:"0 7px" }}/>
                     <div style={{ display:"flex", gap:10 }}>
-                      <MapPinIcon size={14} color="#f472b6" style={{ flexShrink:0, marginTop:2 }}/>
+                      <MapPinIcon size={14} color="var(--brand-pink)" style={{ flexShrink:0, marginTop:2 }}/>
                       <div>
-                        <div style={{ fontSize:10, color:"#f472b6", fontWeight:700, textTransform:"uppercase", letterSpacing:.4, marginBottom:1 }}>Điểm đến</div>
+                        <div style={{ fontSize:10, color:"var(--brand-pink)", fontWeight:700, textTransform:"uppercase", letterSpacing:.4, marginBottom:1 }}>Điểm đến</div>
                         <div style={{ fontSize:13, color:"var(--text-primary)", fontWeight:500 }}>{r.destAddress}</div>
                       </div>
                     </div>
@@ -410,7 +410,7 @@ export default function DriverRoutesPage() {
                   {/* Time + action */}
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      <ClockIcon size={13} color="#6366f1"/>
+                      <ClockIcon size={13} color="var(--brand-primary)"/>
                       <span style={{ fontSize:12, color:"var(--text-secondary)" }}>
                         {new Date(r.departureTime).toLocaleString("vi-VN", {
                           weekday:"short", hour:"2-digit", minute:"2-digit",
@@ -428,7 +428,7 @@ export default function DriverRoutesPage() {
                             ? "rgba(251,191,36,.12)" : "rgba(52,211,153,.12)",
                           border: `1px solid ${r.status === "ACTIVE" ? "rgba(251,191,36,.3)" : "rgba(52,211,153,.3)"}`,
                           borderRadius:8, cursor:"pointer", fontWeight:600, fontSize:12,
-                          color: r.status === "ACTIVE" ? "#fbbf24" : "#34d399",
+                          color: r.status === "ACTIVE" ? "var(--brand-amber)" : "var(--brand-emerald)",
                           opacity: toggleId === r.id ? .6 : 1,
                         }}>
                         {toggleId === r.id ? "..." : r.status === "ACTIVE" ? "Tạm dừng" : "Kích hoạt"}

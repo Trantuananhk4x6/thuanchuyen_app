@@ -4,7 +4,6 @@ import { requireAuth } from "@/lib/auth/context";
 import { RejectWithdrawalSchema } from "@/validators/admin.validator";
 import {
   findWithdrawalById,
-  updateWithdrawal,
   ensureWallet,
 } from "@/repositories/wallet.repository";
 import { prisma } from "@/lib/db/prisma";
@@ -24,26 +23,31 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const wallet = await ensureWallet(wr.driverProfileId);
 
-  await prisma.$transaction([
-    prisma.driverWallet.update({
+  // Lật trạng thái có điều kiện TRƯỚC (updateMany re-check DB) — chỉ hoàn tiền khi
+  // thực sự chuyển được PENDING→REJECTED, chống hoàn tiền 2 lần khi retry/đồng thời.
+  const done = await prisma.$transaction(async (tx) => {
+    const flip = await tx.withdrawalRequest.updateMany({
+      where: { id: params.id, status: "PENDING" },
+      data: { status: "REJECTED", adminNote: parsed.data.note, processedAt: new Date() },
+    });
+    if (flip.count !== 1) return false;
+    await tx.driverWallet.update({
       where: { id: wallet.id },
       data: { withdrawableBalance: { increment: wr.amount } },
-    }),
-    prisma.walletTransaction.create({
+    });
+    await tx.walletTransaction.create({
       data: {
         walletId: wallet.id,
         amount: wr.amount,
         type: "ADJUSTMENT",
         description: `Hoàn tiền rút: ${parsed.data.note}`,
       },
-    }),
-  ]);
-
-  const updated = await updateWithdrawal(params.id, {
-    status: "REJECTED",
-    adminNote: parsed.data.note,
-    processedAt: new Date(),
+    });
+    return true;
   });
+  if (!done) return Errors.conflict("Yêu cầu đã được xử lý");
+
+  const updated = await findWithdrawalById(params.id);
 
   void notify({
     userId: wr.driverProfile.userId,

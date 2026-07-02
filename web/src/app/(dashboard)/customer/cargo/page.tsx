@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 
 const GeoIcon = dynamic(() => import("@/components/ui/GeoIcon"), { ssr: false });
+const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
 
 interface CargoQuote { quotedPrice: number; }
 
@@ -52,6 +53,31 @@ export default function CustomerCargoPage() {
   const onPickupSelect  = (r: PlaceResult) => { setPickup(r);  setPickupInput(r.address);  };
   const onDropoffSelect = (r: PlaceResult) => { setDropoff(r); setDropoffInput(r.address); };
 
+  const [locating, setLocating] = useState(false);
+  const useMyLocation = () => {
+    if (!navigator.geolocation) { setError("Trình duyệt không hỗ trợ định vị GPS."); return; }
+    setLocating(true); setError("");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude: lat, longitude: lng } }) => {
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+          headers: { "Accept-Language": "vi" },
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            const address = data.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setPickup({ address, lat, lng }); setPickupInput(address);
+          })
+          .catch(() => {
+            const address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setPickup({ address, lat, lng }); setPickupInput(address);
+          })
+          .finally(() => setLocating(false));
+      },
+      () => { setLocating(false); setError("Không lấy được vị trí. Hãy cho phép truy cập vị trí trên trình duyệt."); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickup || !dropoff) return;
@@ -88,7 +114,7 @@ export default function CustomerCargoPage() {
           fontSize: 22, fontWeight: 800, color: "var(--text-primary)",
           display: "flex", alignItems: "center", gap: 10, marginBottom: 6,
         }}>
-          <PackageIcon size={22} color="#22d3ee"/>
+          <PackageIcon size={22} color="var(--brand-secondary)"/>
           Gửi hàng liên tỉnh
         </h1>
         <p style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.6 }}>
@@ -105,14 +131,14 @@ export default function CustomerCargoPage() {
           { type: "realtime" as const, title: "Theo dõi live", desc: "Biết chính xác hàng đang ở đâu" },
           { type: "payment" as const, title: "Giá tối ưu", desc: "Tiết kiệm 40–60% so với chuyển phát" },
         ].map((f) => (
-          <div key={f.title} style={{
+          <div key={f.title} className="cargo-feat-card" style={{
             background: "var(--bg-surface)", border: "1px solid var(--border-subtle)",
             borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", alignItems: "center",
             gap: 6, textAlign: "center",
           }}>
-            <GeoIcon type={f.type} size={44}/>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>{f.title}</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{f.desc}</div>
+            <span className="cargo-feat-ico"><GeoIcon type={f.type} size={44}/></span>
+            <div className="cargo-feat-title" style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>{f.title}</div>
+            <div className="cargo-feat-desc" style={{ fontSize: 11, color: "var(--text-muted)" }}>{f.desc}</div>
           </div>
         ))}
       </div>
@@ -137,7 +163,7 @@ export default function CustomerCargoPage() {
             <div style={{
               display: "flex", gap: 10, padding: "12px 16px", borderRadius: 12, marginBottom: 16,
               background: "rgba(52,211,153,.1)", border: "1px solid rgba(52,211,153,.3)",
-              color: "#34d399", fontSize: 13,
+              color: "var(--brand-emerald)", fontSize: 13,
             }}>
               <CheckCircleIcon size={16} style={{ flexShrink: 0, marginTop: 1 }}/>
               <span>{success}</span>
@@ -165,14 +191,24 @@ export default function CustomerCargoPage() {
 
               {/* Pickup */}
               <div style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#22d3ee", marginBottom: 6, textTransform: "uppercase", letterSpacing: .4 }}>
-                  Lấy hàng tại
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: "var(--brand-secondary)", textTransform: "uppercase", letterSpacing: .4 }}>
+                    Lấy hàng tại
+                  </div>
+                  <button type="button" onClick={useMyLocation} disabled={locating} style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    background: "var(--bg-active)", border: "1px solid var(--border-medium)",
+                    borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 600,
+                    color: "var(--brand-secondary)", cursor: locating ? "default" : "pointer",
+                  }}>
+                    <CrosshairIcon size={11}/> {locating ? "Đang định vị..." : "Vị trí của tôi"}
+                  </button>
                 </div>
                 <PlaceAutocomplete
                   placeholder="Địa chỉ lấy hàng..."
                   value={pickupInput} onChange={setPickupInput}
                   onSelect={onPickupSelect}
-                  icon={<CrosshairIcon size={15} color="#22d3ee"/>}
+                  icon={<CrosshairIcon size={15} color="var(--brand-secondary)"/>}
                 />
               </div>
 
@@ -193,16 +229,27 @@ export default function CustomerCargoPage() {
 
               {/* Dropoff */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#f472b6", marginBottom: 6, textTransform: "uppercase", letterSpacing: .4 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--brand-pink)", marginBottom: 6, textTransform: "uppercase", letterSpacing: .4 }}>
                   Giao hàng đến
                 </div>
                 <PlaceAutocomplete
                   placeholder="Địa chỉ giao hàng..."
                   value={dropoffInput} onChange={setDropoffInput}
                   onSelect={onDropoffSelect}
-                  icon={<MapPinIcon size={15} color="#f472b6"/>}
+                  icon={<MapPinIcon size={15} color="var(--brand-pink)"/>}
                 />
               </div>
+
+              {/* Bản đồ tuyến lấy/giao hàng */}
+              {(pickup || dropoff) && (
+                <div style={{ marginTop: 14, height: 220, borderRadius: 12, overflow: "hidden", border: "1px solid var(--border-subtle)" }}>
+                  <RouteMap
+                    pickup={pickup ? { lat: pickup.lat, lng: pickup.lng } : null}
+                    dropoff={dropoff ? { lat: dropoff.lat, lng: dropoff.lng } : null}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Package info */}
@@ -326,7 +373,7 @@ export default function CustomerCargoPage() {
               }}>
                 {quoting ? (
                   <div style={{ padding: 14, display: "flex", alignItems: "center", gap: 10, color: "var(--text-muted)", fontSize: 13 }}>
-                    <span style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(34,211,238,.3)", borderTopColor: "#22d3ee", animation: "spin .6s linear infinite", display: "inline-block" }}/>
+                    <span style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(34,211,238,.3)", borderTopColor: "var(--brand-secondary)", animation: "spin .6s linear infinite", display: "inline-block" }}/>
                     Đang tính giá...
                   </div>
                 ) : quote && (
@@ -335,14 +382,14 @@ export default function CustomerCargoPage() {
                       Giá vận chuyển ước tính
                     </div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 10 }}>
-                      <span style={{ fontSize: 30, fontWeight: 800, color: "#22d3ee", letterSpacing: -1 }}>
+                      <span style={{ fontSize: 30, fontWeight: 800, color: "var(--brand-secondary)", letterSpacing: -1 }}>
                         {quote.quotedPrice.toLocaleString("vi-VN")}đ
                       </span>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                      <MiniStat icon={<RulerIcon size={14} color="#6366f1"/>} label="Khoảng cách" value={`${haversine(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng).toFixed(0)} km`}/>
-                      <MiniStat icon={<TruckIcon size={14} color="#22d3ee"/>} label="Khối lượng" value={`${weightKg} kg`}/>
-                      <MiniStat icon={<CoinIcon size={14} color="#34d399"/>} label="Mỗi kg" value={`${Math.round(quote.quotedPrice / Number(weightKg)).toLocaleString()}đ`}/>
+                      <MiniStat icon={<RulerIcon size={14} color="var(--brand-primary)"/>} label="Khoảng cách" value={`${haversine(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng).toFixed(0)} km`}/>
+                      <MiniStat icon={<TruckIcon size={14} color="var(--brand-secondary)"/>} label="Khối lượng" value={`${weightKg} kg`}/>
+                      <MiniStat icon={<CoinIcon size={14} color="var(--brand-emerald)"/>} label="Mỗi kg" value={`${Math.round(quote.quotedPrice / Number(weightKg)).toLocaleString()}đ`}/>
                     </div>
                   </div>
                 )}
@@ -375,7 +422,12 @@ export default function CustomerCargoPage() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 600px) {
-          .cargo-features { grid-template-columns: 1fr !important; }
+          /* Điện thoại nhỏ: 3 thẻ thu gọn theo hàng ngang thay vì xếp dọc to */
+          .cargo-features { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; margin-bottom: 18px !important; }
+          .cargo-feat-card { padding: 10px 6px !important; gap: 4px !important; border-radius: 12px !important; }
+          .cargo-feat-ico svg { width: 30px !important; height: 30px !important; }
+          .cargo-feat-title { font-size: 11px !important; line-height: 1.25 !important; }
+          .cargo-feat-desc { display: none !important; }
         }
       `}</style>
     </div>

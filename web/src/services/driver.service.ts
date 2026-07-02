@@ -3,6 +3,7 @@ import {
   createDriverProfile,
   updateDriverProfile,
   addKycDocument,
+  replaceKycDocuments,
   createRoute,
   updateRoute,
   findRouteById,
@@ -15,6 +16,8 @@ import type { z } from "zod";
 // ─── KYC ─────────────────────────────────────────────────────────────────────
 
 export async function submitKyc(userId: string, data: z.infer<typeof SubmitKycSchema>) {
+  const { documents, ...profile } = data;
+
   const existing = await findDriverByUserId(userId);
   if (existing && existing.verificationStatus === "PENDING") {
     throw new Error("Hồ sơ đang chờ duyệt");
@@ -23,19 +26,38 @@ export async function submitKyc(userId: string, data: z.infer<typeof SubmitKycSc
     throw new Error("Hồ sơ đã được duyệt");
   }
 
-  if (existing) {
-    return updateDriverProfile(existing.id, {
-      ...data,
-      verificationStatus: "PENDING",
-      rejectReason: null,
-    });
+  // Chỉ chấp nhận giấy tờ nằm trong thư mục của chính tài xế này (chống mạo danh path).
+  if (documents && documents.length > 0) {
+    const prefix = `kyc/${userId}/`;
+    for (const d of documents) {
+      if (!d.path.startsWith(prefix)) throw new Error("Giấy tờ không hợp lệ");
+    }
   }
 
-  return createDriverProfile({
-    user: { connect: { id: userId } },
-    ...data,
-    verificationStatus: "PENDING",
-  });
+  // Tắt ghép hàng → xoá luôn tải trọng cũ để không còn giá trị tồn dư.
+  const normalized = {
+    ...profile,
+    cargoCapacityKg: profile.allowCargo ? (profile.cargoCapacityKg ?? null) : null,
+  };
+
+  const driver = existing
+    ? await updateDriverProfile(existing.id, {
+        ...normalized,
+        verificationStatus: "PENDING",
+        rejectReason: null,
+      })
+    : await createDriverProfile({
+        user: { connect: { id: userId } },
+        ...normalized,
+        verificationStatus: "PENDING",
+      });
+
+  // Nộp kèm giấy tờ → thay toàn bộ bộ giấy tờ cũ bằng bộ mới (lưu PATH vào cột url)
+  if (documents && documents.length > 0) {
+    await replaceKycDocuments(driver.id, documents.map((d) => ({ type: d.type, url: d.path })));
+  }
+
+  return driver;
 }
 
 export async function uploadDocument(userId: string, type: string, url: string) {

@@ -7,20 +7,21 @@ import { ThemeToggle } from "@/components/ThemeProvider";
 import {
   ActivityIcon, CarIcon, RouteIcon, WalletIcon, FlagIcon,
   TagIcon, UsersGroupIcon, LogOutIcon, XIcon, ShieldIcon, ClockIcon,
-  GiftIcon, HomeIcon,
+  GiftIcon, HomeIcon, MenuIcon, DocumentIcon,
 } from "@/components/ui/Icons";
 
 const NAV = [
-  { href: "/admin",             Icon: ActivityIcon,  label: "Tổng quan",    color: "#6366f1" },
-  { href: "/admin/landing",     Icon: HomeIcon,      label: "Trang chủ",    color: "#22d3ee" },
-  { href: "/admin/orders",      Icon: ClockIcon,     label: "Đơn chờ",      color: "#fbbf24" },
-  { href: "/admin/drivers",     Icon: CarIcon,       label: "Tài xế & KYC", color: "#22d3ee" },
-  { href: "/admin/trips",       Icon: RouteIcon,     label: "Chuyến xe",    color: "#a78bfa" },
-  { href: "/admin/withdrawals", Icon: WalletIcon,    label: "Rút tiền",     color: "#34d399" },
-  { href: "/admin/reports",     Icon: FlagIcon,      label: "Báo cáo",      color: "#f87171" },
-  { href: "/admin/pricing",     Icon: TagIcon,       label: "Bảng giá",     color: "#fbbf24" },
-  { href: "/admin/rewards",     Icon: GiftIcon,      label: "Khuyến mãi",   color: "#f97316" },
-  { href: "/admin/users",       Icon: UsersGroupIcon,label: "Người dùng",   color: "#f472b6" },
+  { href: "/admin",             Icon: ActivityIcon,  label: "Tổng quan",    color: "#00A18B" },
+  { href: "/admin/landing",     Icon: HomeIcon,      label: "Trang chủ",    color: "#0BA5C7" },
+  { href: "/admin/orders",      Icon: ClockIcon,     label: "Đơn chờ",      color: "#E8912E" },
+  { href: "/admin/drivers",     Icon: CarIcon,       label: "Tài xế & KYC", color: "#0891B2" },
+  { href: "/admin/trips",       Icon: RouteIcon,     label: "Chuyến xe",    color: "#0F766E" },
+  { href: "/admin/withdrawals", Icon: WalletIcon,    label: "Rút tiền",     color: "#12B886" },
+  { href: "/admin/reports",     Icon: FlagIcon,      label: "Báo cáo",      color: "#E03E3E" },
+  { href: "/admin/pricing",     Icon: TagIcon,       label: "Bảng giá",     color: "#0E9F6E" },
+  { href: "/admin/rewards",     Icon: GiftIcon,      label: "Khuyến mãi",   color: "#F2994A" },
+  { href: "/admin/blog",        Icon: DocumentIcon,  label: "Blog",         color: "#0EA5A0" },
+  { href: "/admin/users",       Icon: UsersGroupIcon,label: "Người dùng",   color: "#14B8A6" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -46,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }}>
       <div style={{
         width: 36, height: 36, borderRadius: "50%",
-        border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1",
+        border: "3px solid var(--border-medium)", borderTopColor: "var(--brand-primary)",
         animation: "spin .8s linear infinite",
       }}/>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -82,11 +83,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           borderBottom: "1px solid var(--border-subtle)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img src="/logo.png" alt="Thuận Chuyến" style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+            <img src="/logo.png" alt="Thuận Chuyến" style={{
+              width: 40, height: 40, borderRadius: 11, objectFit: "cover",
+              border: "1px solid var(--border-subtle)",
+            }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>Thuận Chuyến</div>
-              <div style={{ fontSize: 10, color: "#6366f1", fontWeight: 600 }}>ADMIN</div>
+              <div className="brand-name" style={{ fontSize: 16 }}>Thuận Chuyến</div>
+              <div style={{ fontSize: 10, color: "var(--brand-primary)", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>ADMIN</div>
             </div>
           </div>
           <button
@@ -102,8 +106,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div style={{ padding: "10px 16px" }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
-            background: "rgba(99,102,241,.12)", border: "1px solid rgba(99,102,241,.3)",
-            borderRadius: 99, padding: "4px 10px", fontSize: 11, color: "#6366f1", fontWeight: 600,
+            background: "var(--bg-active)", border: "1px solid var(--border-medium)",
+            borderRadius: 99, padding: "4px 10px", fontSize: 11, color: "var(--brand-primary)", fontWeight: 600,
           }}>
             <ShieldIcon size={10}/> Admin Dashboard
           </div>
@@ -129,7 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   <Icon size={16} color={active ? color : "currentColor"}/>
                   <span style={{ flex: 1 }}>{label}</span>
-                  {active && <span style={{ width: 5, height: 5, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}` }}/>}
+                  {active && <span style={{ width: 5, height: 5, borderRadius: "50%", background: color }}/>}
                 </div>
               </Link>
             );
@@ -144,7 +148,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }}>
             <div style={{
               width: 32, height: 32, borderRadius: "50%",
-              background: "linear-gradient(135deg,#6366f1,#22d3ee)",
+              background: "linear-gradient(135deg,var(--brand-primary),var(--brand-secondary))",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontWeight: 700, fontSize: 13, color: "#fff", flexShrink: 0,
             }}>{initial}</div>
@@ -152,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user.fullName ?? user.email}
               </div>
-              <div style={{ fontSize: 10, color: "#6366f1", fontWeight: 600 }}>Administrator</div>
+              <div style={{ fontSize: 10, color: "var(--brand-primary)", fontWeight: 600 }}>Administrator</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -173,7 +177,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* ── Main ──────────────────────────────────────────────── */}
-      <div style={{ flex: 1, marginLeft: "var(--adm-ml, 260px)", display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div className="adm-main-wrap" style={{ flex: 1, marginLeft: "var(--adm-ml, 260px)", display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Mobile header */}
         <header className="adm-mobile-hdr" style={{
           display: "none", alignItems: "center", justifyContent: "space-between",
@@ -181,18 +185,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           background: "var(--bg-surface)", borderBottom: "1px solid var(--border-subtle)",
           position: "sticky", top: 0, zIndex: 30,
         }}>
-          <button onClick={() => setOpen(true)} style={{
-            width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+          <button onClick={() => setOpen(true)} aria-label="Mở menu" style={{
+            width: 40, height: 40, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
             background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)", cursor: "pointer", color: "var(--text-primary)",
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            <MenuIcon size={18} strokeWidth={2.5} />
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>
             <img src="/logo.png" alt="Thuận Chuyến" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }} /> Admin
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <ThemeToggle />
-            <button onClick={logout} style={{ padding: "5px 10px", borderRadius: 6, background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)", color: "var(--text-muted)", fontSize: 11, cursor: "pointer" }}>
+            <button onClick={logout} style={{ minHeight: 40, padding: "8px 14px", borderRadius: 8, background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)", color: "var(--text-secondary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
               Thoát
             </button>
           </div>
@@ -205,14 +209,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) {
+        /* Sidebar cố định từ ≥1025px; nhỏ hơn → dạng drawer + header mobile */
+        @media (max-width: 1024px) {
           .adm-mobile-hdr { display: flex !important; }
-          .admin-main { padding: 16px !important; }
-          aside { --adm-sw: -260px; }
-          div[style*="--adm-ml"] { margin-left: 0 !important; }
+          .admin-main { padding: 20px !important; }
+          aside { --adm-sw: -280px; }
+          .adm-main-wrap { margin-left: 0 !important; }
           .admin-close-btn { display: flex !important; }
         }
-        @media (min-width: 769px) {
+        @media (max-width: 480px) {
+          .admin-main { padding: 14px !important; }
+        }
+        @media (min-width: 1025px) {
           aside { left: 0 !important; }
         }
       `}</style>

@@ -5,9 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeProvider";
 import NotificationBell from "@/components/NotificationBell";
+import PhoneGate from "@/components/PhoneGate";
 import {
   HomeIcon, ListIcon, HistoryIcon, WalletIcon, DocumentIcon,
-  RouteIcon, BackhaulIcon, PackageIcon, LogOutIcon, XIcon, CarIcon, ChatIcon,
+  RouteIcon, BackhaulIcon, PackageIcon, LogOutIcon, XIcon, CarIcon, ChatIcon, MenuIcon,
 } from "@/components/ui/Icons";
 
 const NAV = [
@@ -43,7 +44,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
       <div style={{
         width: 36, height: 36, borderRadius: "50%",
         border: "3px solid rgba(99,102,241,.2)",
-        borderTopColor: "#6366f1",
+        borderTopColor: "var(--brand-primary)",
         animation: "spin .8s linear infinite",
       }}/>
       <span style={{ color: "var(--text-muted)", fontSize: 13 }}>Đang tải...</span>
@@ -56,6 +57,9 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-base)" }}>
+      {/* Bắt liên kết số điện thoại nếu tài khoản chưa có */}
+      <PhoneGate />
+
       {/* ── Backdrop (mobile) ─────────────────────────────────── */}
       {open && (
         <div
@@ -82,11 +86,14 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
           borderBottom: "1px solid var(--border-subtle)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img src="/logo.png" alt="Thuận Chuyến" style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+            <img src="/logo.png" alt="Thuận Chuyến" style={{
+              width: 40, height: 40, borderRadius: 11, objectFit: "cover",
+              boxShadow: "0 0 0 1px rgba(99,102,241,.45), 0 0 16px rgba(99,102,241,.42), 0 0 30px rgba(34,211,238,.18)",
+            }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>Tài xế</div>
-              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Driver Dashboard</div>
+              <div className="brand-name" style={{ fontSize: 16 }}>Tài xế</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 600 }}>Driver Hub</div>
             </div>
           </div>
           <button
@@ -109,9 +116,9 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             background: "rgba(52,211,153,.12)", border: "1px solid rgba(52,211,153,.3)",
-            borderRadius: 99, padding: "4px 10px", fontSize: 11, color: "#34d399", fontWeight: 600,
+            borderRadius: 99, padding: "4px 10px", fontSize: 11, color: "var(--brand-emerald)", fontWeight: 600,
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34d399", boxShadow: "0 0 6px #34d399" }}/>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--brand-emerald)", boxShadow: "0 0 6px var(--brand-emerald)" }}/>
             Driver Dashboard
           </div>
         </div>
@@ -233,9 +240,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
             }}
             aria-label="Mở menu"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M3 12h18M3 6h18M3 18h18"/>
-            </svg>
+            <MenuIcon size={18} strokeWidth={2.5} />
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>
             <img src="/logo.png" alt="Thuận Chuyến" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }} />

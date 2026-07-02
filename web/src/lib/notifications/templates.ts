@@ -8,6 +8,49 @@ export interface NotificationTemplate {
 }
 
 const templates: Record<NotificationEvent, NotificationTemplate> = {
+  TRIP_REQUEST_CREATED: {
+    subject: "Đặt chuyến thành công",
+    emailHtml: (d) => `
+      <h2>Đặt chuyến thành công 🎉</h2>
+      <p>Xin chào <strong>${d.passengerName}</strong>, yêu cầu đặt chuyến của bạn đã được ghi nhận.</p>
+      <p><strong>Điểm đón:</strong> ${d.pickup}</p>
+      <p><strong>Điểm đến:</strong> ${d.dropoff}</p>
+      <p><strong>Thời gian:</strong> ${d.departureTime}</p>
+      <p><strong>Giá tạm tính:</strong> ${d.price}đ</p>
+      <p>Chúng tôi đang tìm tài xế phù hợp và sẽ báo bạn ngay khi có tài xế nhận chuyến.</p>
+    `,
+    zaloTemplateId: process.env.ZALO_ZNS_TEMPLATE_TRIP_BOOKED ?? "",
+    zaloData: (d) => ({
+      customer_name: d.passengerName,
+      pickup: d.pickup,
+      dropoff: d.dropoff,
+      time: d.departureTime,
+      price: d.price,
+    }),
+  },
+
+  CARGO_REQUEST_CREATED: {
+    subject: "Đặt gửi hàng thành công",
+    emailHtml: (d) => `
+      <h2>Đặt gửi hàng thành công 📦</h2>
+      <p>Yêu cầu gửi hàng của bạn đã được ghi nhận.</p>
+      <p><strong>Điểm lấy:</strong> ${d.pickup}</p>
+      <p><strong>Điểm giao:</strong> ${d.dropoff}</p>
+      <p><strong>Người nhận:</strong> ${d.receiverName}</p>
+      <p><strong>Khối lượng:</strong> ${d.weightKg} kg</p>
+      <p><strong>Cước tạm tính:</strong> ${d.price}đ</p>
+      <p>Chúng tôi đang tìm tài xế phù hợp để vận chuyển hàng của bạn.</p>
+    `,
+    zaloTemplateId: process.env.ZALO_ZNS_TEMPLATE_CARGO_BOOKED ?? "",
+    zaloData: (d) => ({
+      pickup: d.pickup,
+      dropoff: d.dropoff,
+      receiver_name: d.receiverName,
+      weight: d.weightKg,
+      price: d.price,
+    }),
+  },
+
   TRIP_ACCEPTED: {
     subject: "Tài xế đã nhận cuốc của bạn",
     emailHtml: (d) => `
@@ -64,7 +107,7 @@ const templates: Record<NotificationEvent, NotificationTemplate> = {
           <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;text-align:center">
             <div style="font-size:40px;margin-bottom:8px">🚗</div>
             <h1 style="color:#fff;margin:0;font-size:22px;font-weight:800">Tài xế đang đến đón bạn!</h1>
-            <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px">Chuyến xe Thuận Đường của bạn đã bắt đầu</p>
+            <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px">Chuyến xe Thuận Chuyến của bạn đã bắt đầu</p>
           </div>
 
           <!-- Body -->
@@ -107,7 +150,7 @@ const templates: Record<NotificationEvent, NotificationTemplate> = {
 
           <!-- Footer -->
           <div style="background:#0f172a;padding:16px 32px;text-align:center;border-top:1px solid #1e293b">
-            <p style="color:#475569;font-size:11px;margin:0">Thuận Đường · Ghép chuyến xe liên tỉnh</p>
+            <p style="color:#475569;font-size:11px;margin:0">Thuận Chuyến · Ghép chuyến xe liên tỉnh</p>
           </div>
         </div>
       </body>

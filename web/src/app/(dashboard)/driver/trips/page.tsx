@@ -56,7 +56,7 @@ export default function DriverTripsPage() {
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
-            <HistoryIcon size={22} color="#a78bfa"/> Lịch sử chuyến
+            <HistoryIcon size={22} color="var(--brand-violet)"/> Lịch sử chuyến
           </h1>
           <p style={{ color:"var(--text-muted)", fontSize:13 }}>Tổng {total} chuyến</p>
         </div>
@@ -83,7 +83,7 @@ export default function DriverTripsPage() {
                 padding:"5px 14px", borderRadius:99, fontSize:12, fontWeight:600, cursor:"pointer",
                 background: active ? (sc?.bg ?? "rgba(167,139,250,.15)") : "transparent",
                 border:`1px solid ${active ? (sc?.border ?? "rgba(167,139,250,.35)") : "var(--border-subtle)"}`,
-                color: active ? (sc?.color ?? "#a78bfa") : "var(--text-muted)",
+                color: active ? (sc?.color ?? "var(--brand-violet)") : "var(--text-muted)",
                 transition:"all .15s",
               }}>
               {s === "" ? "Tất cả" : STATUS_CFG[s]?.label ?? s}
@@ -101,7 +101,7 @@ export default function DriverTripsPage() {
 
       {loading ? (
         <div style={{ display:"flex", justifyContent:"center", padding:48 }}>
-          <div style={{ width:32, height:32, borderRadius:"50%", border:"3px solid rgba(167,139,250,.2)", borderTopColor:"#a78bfa", animation:"spin .8s linear infinite" }}/>
+          <div style={{ width:32, height:32, borderRadius:"50%", border:"3px solid rgba(167,139,250,.2)", borderTopColor:"var(--brand-violet)", animation:"spin .8s linear infinite" }}/>
         </div>
       ) : items.length === 0 ? (
         <div style={{ textAlign:"center", padding:"48px 20px", background:"var(--bg-surface)", border:"1px dashed var(--border-subtle)", borderRadius:18 }}>
@@ -153,18 +153,18 @@ export default function DriverTripsPage() {
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
                       <span style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--text-secondary)" }}>
-                        <SeatIcon size={12} color="#6366f1"/>
+                        <SeatIcon size={12} color="var(--brand-primary)"/>
                         {t.seatsFilled}/{t.seatsTotal} ghế
                       </span>
                       {t.startedAt && (
                         <span style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--text-muted)" }}>
-                          <ClockIcon size={12} color="#22d3ee"/>
+                          <ClockIcon size={12} color="var(--brand-secondary)"/>
                           {new Date(t.startedAt).toLocaleString("vi-VN", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit" })}
                         </span>
                       )}
                       {t.completedAt && (
                         <span style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--text-muted)" }}>
-                          <CheckCircleIcon size={12} color="#34d399"/>
+                          <CheckCircleIcon size={12} color="var(--brand-emerald)"/>
                           {new Date(t.completedAt).toLocaleString("vi-VN", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit" })}
                         </span>
                       )}

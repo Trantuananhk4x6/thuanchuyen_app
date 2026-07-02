@@ -18,9 +18,17 @@ export default function ThreeBackground() {
     const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 2000);
     camera.position.set(0, 0, 90);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Chế độ "lite": tôn trọng prefers-reduced-motion / máy yếu / màn nhỏ
+    // → render 1 khung tĩnh, KHÔNG chạy vòng lặp animation (đỡ lag/nóng máy/tụt pin).
+    const prefersReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const lite =
+      prefersReduced ||
+      (navigator.hardwareConcurrency ?? 8) <= 4 ||
+      window.innerWidth < 900;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "low-power" });
     renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
 
@@ -140,7 +148,7 @@ export default function ThreeBackground() {
 
     /* ── Star field particles ────────────────────────────────────── */
     const starGeo   = new THREE.BufferGeometry();
-    const starCount = 700;
+    const starCount = lite ? 90 : 180;
     const starPos   = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount; i++) {
       starPos[i * 3]     = (Math.random() - 0.5) * 320;
@@ -172,19 +180,11 @@ export default function ThreeBackground() {
 
     /* ── Animation loop ──────────────────────────────────────────── */
     let frame = 0;
-    let raf: number;
+    let raf = 0;
     let mouseX = 0, mouseY = 0;
-
-    const onMouse = (e: MouseEvent) => {
-      mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
-      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-    };
-    window.addEventListener("mousemove", onMouse);
-
     const tmpVec = new THREE.Vector3();
 
-    const animate = () => {
-      raf = requestAnimationFrame(animate);
+    const renderFrame = () => {
       frame++;
 
       /* Pulse nodes */
@@ -207,7 +207,6 @@ export default function ThreeBackground() {
         if (v.t > 1) v.t -= 1;
         v.curve.getPoint(v.t, tmpVec);
         v.mesh.position.copy(tmpVec);
-        /* tiny bob */
         v.mesh.position.z += 1.5 * Math.sin(frame * 0.06 + v.t * 10);
       });
 
@@ -216,18 +215,15 @@ export default function ThreeBackground() {
       icoMesh.rotation.x += 0.0006;
       icoMesh.rotation.y += 0.001;
 
-      /* Parallax camera on mouse */
+      /* Parallax camera on mouse + gentle drift */
       camera.position.x += (mouseX * 6 - camera.position.x) * 0.03;
       camera.position.y += (-mouseY * 4 - camera.position.y + 1) * 0.03;
-      /* Gentle drift */
       camera.position.x += Math.sin(frame * 0.0015) * 0.04;
-      camera.position.y += Math.cos(frame * 0.001 ) * 0.03;
+      camera.position.y += Math.cos(frame * 0.001) * 0.03;
       camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
     };
-
-    animate();
 
     const onResize = () => {
       if (!mount) return;
@@ -238,10 +234,43 @@ export default function ThreeBackground() {
     };
     window.addEventListener("resize", onResize);
 
+    // LITE: vẽ đúng 1 khung tĩnh rồi dừng — không RAF, không nghe chuột.
+    if (lite) {
+      renderer.render(scene, camera);
+      return () => {
+        window.removeEventListener("resize", onResize);
+        renderer.dispose();
+        if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+      };
+    }
+
+    const onMouse = (e: MouseEvent) => {
+      mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    window.addEventListener("mousemove", onMouse);
+
+    // Cap ~30fps: chỉ render mỗi khung chẵn.
+    let tickCount = 0;
+    const animate = () => {
+      raf = requestAnimationFrame(animate);
+      if (tickCount++ % 2 === 0) renderFrame();
+    };
+
+    // Pause hẳn khi tab ẩn (đỡ tốn CPU/GPU/pin).
+    const onVisibility = () => {
+      if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
+      else if (!raf) { animate(); }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    animate();
+
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onMouse);
+      document.removeEventListener("visibilitychange", onVisibility);
       renderer.dispose();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };

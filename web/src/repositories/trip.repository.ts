@@ -3,13 +3,16 @@ import type { Prisma, TripStatus } from "@prisma/client";
 
 // ─── Read ─────────────────────────────────────────────────────────────────────
 
+// Chỉ lộ các trường an toàn của tài xế cho khách (không passwordHash/email...).
+const DRIVER_PUBLIC_USER = { fullName: true, phone: true, avatarUrl: true } as const;
+
 export function findTripById(id: string) {
   return prisma.trip.findUnique({
     where: { id },
     include: {
       passengers: { include: { request: true } },
       stops: { orderBy: { order: "asc" } },
-      driverProfile: { include: { user: true } },
+      driverProfile: { include: { user: { select: DRIVER_PUBLIC_USER } } },
     },
   });
 }
@@ -36,7 +39,7 @@ export function findTripsByCustomer(customerId: string, params: { page: number; 
   return prisma.$transaction([
     prisma.trip.findMany({
       where: { passengers: { some: { customerId } }, ...(params.status ? { status: params.status } : {}) },
-      include: { driverProfile: { include: { user: true } } },
+      include: { driverProfile: { include: { user: { select: DRIVER_PUBLIC_USER } } } },
       orderBy: { createdAt: "desc" },
       skip,
       take: params.limit,

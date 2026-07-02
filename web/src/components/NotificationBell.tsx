@@ -70,7 +70,7 @@ export default function NotificationBell() {
           <span style={{
             position: "absolute", top: 4, right: 4,
             width: 16, height: 16, borderRadius: "50%",
-            background: "#f87171", color: "#fff",
+            background: "var(--danger)", color: "#fff",
             fontSize: 9, fontWeight: 800,
             display: "flex", alignItems: "center", justifyContent: "center",
             animation: "pulse4 2s infinite",
@@ -130,7 +130,7 @@ export default function NotificationBell() {
                   </div>
                   <div style={{
                     fontSize: 10, fontWeight: 700, flexShrink: 0, alignSelf: "flex-start", marginTop: 4,
-                    color: n.status === "SENT" ? "#34d399" : n.status === "FAILED" ? "#f87171" : "#94a3b8",
+                    color: n.status === "SENT" ? "var(--brand-emerald)" : n.status === "FAILED" ? "var(--danger)" : "var(--text-secondary)",
                   }}>
                     {n.status === "SENT" ? "✓" : n.status === "FAILED" ? "✗" : "…"}
                   </div>

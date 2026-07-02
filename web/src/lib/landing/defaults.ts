@@ -1,9 +1,40 @@
-import type { LandingConfigData } from "@/types/landing";
+import type { LandingConfigData, ThemeConfig } from "@/types/landing";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+/* Default theme — bảng màu Xanh SM: nền sáng, xanh cyan-green tươi, phẳng,
+ * thân thiện (bỏ tông tím/indigo + neon để giảm cảm giác "AI"). */
+export const DEFAULT_THEME: ThemeConfig = {
+  brandPrimary:     "#00C2A8",  // Xanh cyan-green đặc trưng — nút/điểm nhấn (chữ tối trên nền này)
+  brandPrimaryDark: "#00806E",  // Teal đậm — chữ/link trên nền trắng (đạt AA), cuối gradient
+  brandLight:       "#33D1BC",  // Cyan nhạt — icon/nền nhạt
+  brandSecondary:   "#0BA5C7",  // Cyan-xanh dương phụ
+  brandViolet:      "#00806E",  // (thay tím) teal đậm
+  brandPink:        "#F2994A",  // (thay hồng) cam ấm — thân thiện hơn
+  brandEmerald:     "#12B886",  // Xanh lá
+  brandAmber:       "#F2A93B",
+  bgBase:     "#F4F7F6",  // Nền trang — trắng ngả mint rất nhạt
+  bgDeep:     "#EAF1EF",  // Nền phần dưới hero
+  bgSurface:  "#FFFFFF",  // Thẻ/card
+  bgOverlay:  "#F1F5F4",  // Ô nhập / chip
+  bgElevated: "#E7EEEC",  // Bề mặt khi hover
+  textPrimary:   "#0E1B18",  // Gần đen (hơi ngả xanh)
+  textSecondary: "#4A5A55",  // Chữ phụ
+  textMuted:     "#6B7B76",   // Chữ mờ
+  borderColor:   "#E2E8E6",   // Viền mảnh
+  success: "#12B886",
+  danger:  "#E03E3E",
+  warning: "#F2A93B",
+  info:    "#0BA5C7",
+  gradFrom:  "#00C2A8",
+  gradTo:    "#00A18B",  // Gradient cùng tông cyan-green (không cầu vồng)
+  gradAngle: 135,
+  radius:    14,
+};
+
 /* Called once on first DB access to seed the singleton row */
 export const DEFAULT_LANDING_CONFIG: LandingConfigData = {
+  theme: DEFAULT_THEME,
   navBrand: "Thuận Chuyến",
   navItems: [
     { id: uid(), label: "Giới thiệu", href: "#about",    external: false, visible: true,  order: 1 },
@@ -64,7 +95,7 @@ export const DEFAULT_LANDING_CONFIG: LandingConfigData = {
       subtitle: "Không bỏ lỡ những ưu đãi độc quyền dành riêng cho bạn",
       limit: 4,
       ctaLabel: "Xem tất cả ưu đãi",
-      ctaHref: "/promotions",
+      ctaHref: "/login",
     },
     {
       id: uid(),
@@ -102,8 +133,8 @@ export const DEFAULT_LANDING_CONFIG: LandingConfigData = {
       label: "Hỗ trợ",
       links: [
         { id: uid(), label: "Hướng dẫn",  href: "/guide",   external: false },
-        { id: uid(), label: "Điều khoản", href: "/terms",   external: false },
-        { id: uid(), label: "Chính sách", href: "/privacy", external: false },
+        { id: uid(), label: "Blog",       href: "/blog",    external: false },
+        { id: uid(), label: "Điều khoản", href: "#",        external: false },
       ],
     },
     {

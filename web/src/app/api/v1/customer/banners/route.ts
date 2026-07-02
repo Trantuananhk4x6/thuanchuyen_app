@@ -1,20 +1,27 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { ok } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/context";
 import { prisma } from "@/lib/db/prisma";
+
+const BannersQuerySchema = z.object({
+  position: z
+    .enum(["HOME_TOP", "HOME_BOTTOM", "TRIP_LISTING", "BOOKING_CONFIRM"])
+    .catch("HOME_TOP"),
+});
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req, "CUSTOMER");
   if ("error" in auth) return auth.error;
 
   const { searchParams } = new URL(req.url);
-  const position = searchParams.get("position") ?? "HOME_TOP";
+  const { position } = BannersQuerySchema.parse(Object.fromEntries(searchParams));
   const now = new Date();
 
   try {
     const banners = await prisma.banner.findMany({
       where: {
-        position: position as never,
+        position,
         active: true,
         OR: [
           { startsAt: null },

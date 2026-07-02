@@ -100,7 +100,7 @@ export default function DriverAcceptedPage() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <CarIcon size={22} color="#34d399"/> Chuyến đã nhận
+            <CarIcon size={22} color="var(--brand-emerald)"/> Chuyến đã nhận
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
             {total} hành khách · {groups.length} chuyến ghép
@@ -128,7 +128,7 @@ export default function DriverAcceptedPage() {
 
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: 64 }}>
-          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(52,211,153,.2)", borderTopColor: "#34d399", animation: "spin .8s linear infinite" }}/>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(52,211,153,.2)", borderTopColor: "var(--brand-emerald)", animation: "spin .8s linear infinite" }}/>
         </div>
       ) : groups.length === 0 ? (
         <EmptyState/>
@@ -216,7 +216,7 @@ function TripGroupCard({ group: g, index, onUpdated }: { group: TripGroup; index
                 background: label.color + "22", color: label.color, border: `1px solid ${label.color}44`,
               }}>{label.text}</span>
               <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-muted)" }}>
-                <ClockIcon size={11} color="#22d3ee"/>
+                <ClockIcon size={11} color="var(--brand-secondary)"/>
                 {formatDep(g.departureTime)}
               </span>
             </div>
@@ -224,11 +224,11 @@ function TripGroupCard({ group: g, index, onUpdated }: { group: TripGroup; index
             {/* Origin → Dest */}
             {(g.routeOrigin || g.routeDest) && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-secondary)", marginBottom: 4, flexWrap: "wrap" }}>
-                <span style={{ color: "#22d3ee", fontWeight: 600 }}>
+                <span style={{ color: "var(--brand-secondary)", fontWeight: 600 }}>
                   {g.routeOrigin ?? "—"}
                 </span>
                 <span style={{ color: "var(--text-muted)" }}>→</span>
-                <span style={{ color: "#f472b6", fontWeight: 600 }}>
+                <span style={{ color: "var(--brand-pink)", fontWeight: 600 }}>
                   {g.routeDest ?? "—"}
                 </span>
               </div>
@@ -236,15 +236,15 @@ function TripGroupCard({ group: g, index, onUpdated }: { group: TripGroup; index
 
             {/* Stats row */}
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <Chip icon={<UserIcon size={11} color="#a78bfa"/>} text={`${g.passengerCount} khách`} color="#a78bfa"/>
-              <Chip icon={<SeatIcon size={11} color="#6366f1"/>}  text={`${g.totalSeats} ghế`} color="#6366f1"/>
-              <Chip icon={<RulerIcon size={11} color="#22d3ee"/>} text={`${g.maxDistanceKm.toFixed(0)} km`} color="#22d3ee"/>
+              <Chip icon={<UserIcon size={11} color="var(--brand-violet)"/>} text={`${g.passengerCount} khách`} color="var(--brand-violet)"/>
+              <Chip icon={<SeatIcon size={11} color="var(--brand-primary)"/>}  text={`${g.totalSeats} ghế`} color="var(--brand-primary)"/>
+              <Chip icon={<RulerIcon size={11} color="var(--brand-secondary)"/>} text={`${g.maxDistanceKm.toFixed(0)} km`} color="var(--brand-secondary)"/>
             </div>
           </div>
 
           {/* Earnings */}
           <div style={{ textAlign: "right", flexShrink: 0 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--brand-emerald)" }}>
               {g.totalEarnings.toLocaleString("vi-VN")}đ
             </div>
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>bạn nhận</div>
@@ -257,7 +257,7 @@ function TripGroupCard({ group: g, index, onUpdated }: { group: TripGroup; index
             marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6,
             padding: "5px 12px", borderRadius: 20,
             background: "rgba(251,191,36,.12)", border: "1px solid rgba(251,191,36,.25)",
-            fontSize: 12, color: "#fbbf24", fontWeight: 600,
+            fontSize: 12, color: "var(--brand-amber)", fontWeight: 600,
           }}>
             ✨ Lịch đón đã được tối ưu · tiết kiệm tối đa thời gian chạy vòng
           </div>
@@ -336,7 +336,7 @@ function TripGroupCard({ group: g, index, onUpdated }: { group: TripGroup; index
             style={{
               flex: 1, minWidth: 130, padding: "10px 14px",
               background: "rgba(34,211,238,.12)", border: "1px solid rgba(34,211,238,.3)",
-              borderRadius: 10, color: "#22d3ee", fontWeight: 700, fontSize: 13,
+              borderRadius: 10, color: "var(--brand-secondary)", fontWeight: 700, fontSize: 13,
               textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
             }}
           >
@@ -344,9 +344,9 @@ function TripGroupCard({ group: g, index, onUpdated }: { group: TripGroup; index
           </a>
         )}
 
-        {/* Start trip placeholder — triggers actual start flow */}
+        {/* Bắt đầu chuyến — luồng start thực sự nằm ở trang chủ tài xế (/driver) */}
         <a
-          href={`/driver/trips`}
+          href={`/driver`}
           style={{
             flex: 2, minWidth: 160, padding: "10px 14px",
             background: "linear-gradient(135deg,#34d399,#059669)",
@@ -375,7 +375,7 @@ function StopRow({ stop, isLast }: { stop: Stop; isLast: boolean }) {
         <div style={{
           width: 26, height: 26, borderRadius: "50%", flexShrink: 0, zIndex: 1,
           background: isPickup
-            ? "linear-gradient(135deg,#22d3ee,#0ea5e9)"
+            ? "linear-gradient(135deg,var(--brand-secondary),var(--info))"
             : "linear-gradient(135deg,#f472b6,#db2777)",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 11, fontWeight: 800, color: "#fff",
@@ -396,7 +396,7 @@ function StopRow({ stop, isLast }: { stop: Stop; isLast: boolean }) {
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: .4,
-                color: isPickup ? "#22d3ee" : "#f472b6",
+                color: isPickup ? "var(--brand-secondary)" : "var(--brand-pink)",
               }}>
                 {isPickup ? "Đón" : "Trả"} •
               </span>
@@ -417,7 +417,7 @@ function StopRow({ stop, isLast }: { stop: Stop; isLast: boolean }) {
               style={{
                 width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(52,211,153,.12)", border: "1px solid rgba(52,211,153,.3)",
-                color: "#34d399", fontSize: 14, textDecoration: "none",
+                color: "var(--brand-emerald)", fontSize: 14, textDecoration: "none",
               }}
             >📞</a>
             <a
@@ -428,7 +428,7 @@ function StopRow({ stop, isLast }: { stop: Stop; isLast: boolean }) {
               style={{
                 width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(34,211,238,.12)", border: "1px solid rgba(34,211,238,.3)",
-                color: "#22d3ee", fontSize: 14, textDecoration: "none",
+                color: "var(--brand-secondary)", fontSize: 14, textDecoration: "none",
               }}
             >🗺</a>
           </div>
@@ -451,7 +451,7 @@ function PassengerCard({ match: m }: { match: TripGroup["matches"][number] }) {
         width: 36, height: 36, borderRadius: 10, flexShrink: 0,
         background: "rgba(99,102,241,.15)", border: "1px solid rgba(99,102,241,.3)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 14, color: "#6366f1", fontWeight: 800,
+        fontSize: 14, color: "var(--brand-primary)", fontWeight: 800,
       }}>
         {m.request.passengerName.charAt(0).toUpperCase()}
       </div>
@@ -461,15 +461,15 @@ function PassengerCard({ match: m }: { match: TripGroup["matches"][number] }) {
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-            <SeatIcon size={10} color="#6366f1"/> {m.request.seats} ghế
+            <SeatIcon size={10} color="var(--brand-primary)"/> {m.request.seats} ghế
           </span>
           <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-            <RulerIcon size={10} color="#a78bfa"/> {m.request.distanceKm.toFixed(1)} km
+            <RulerIcon size={10} color="var(--brand-violet)"/> {m.request.distanceKm.toFixed(1)} km
           </span>
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: "#34d399" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "var(--brand-emerald)" }}>
           {m.driverNet.toLocaleString("vi-VN")}đ
         </div>
         <div style={{ fontSize: 10, color: "var(--text-muted)" }}>bạn nhận</div>

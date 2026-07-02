@@ -12,6 +12,13 @@ interface DriverProfile {
   user: { fullName: string | null; phone: string | null };
 }
 interface Match { id: string; status: string; driverProfileId?: string; driverProfile?: DriverProfile }
+interface DriverOption {
+  id: string;
+  vehiclePlate: string;
+  vehicleType: string;
+  rating: number;
+  user: { fullName: string | null; phone: string | null };
+}
 interface Order {
   id: string;
   passengerName: string; passengerPhone: string; note?: string | null;
@@ -47,6 +54,11 @@ export default function AdminOrdersPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [cancelling,  setCancelling]  = useState(false);
   const [error,       setError]       = useState("");
+  // Gán tài xế
+  const [driverQuery,   setDriverQuery]   = useState("");
+  const [driverResults, setDriverResults] = useState<DriverOption[]>([]);
+  const [driverLoading, setDriverLoading] = useState(false);
+  const [assigning,     setAssigning]     = useState(false);
 
   const limit = 20;
 
@@ -69,12 +81,42 @@ export default function AdminOrdersPage() {
 
   const openDetail = async (o: Order) => {
     setSelected(o);
+    setDriverQuery(""); setDriverResults([]);
     setDetailLoading(true);
     try {
       const r = await api.get<{ order: Order }>(`/admin/orders/${o.id}`);
       setSelected(r.data.order);
     } catch { /* giữ data cũ nếu fetch lỗi */ }
     finally { setDetailLoading(false); }
+  };
+
+  // Tìm tài xế đã duyệt (debounce 300ms) khi đang mở đơn PENDING
+  useEffect(() => {
+    if (!selected || selected.status !== "PENDING") return;
+    let active = true;
+    setDriverLoading(true);
+    const q = driverQuery.trim();
+    const t = setTimeout(async () => {
+      try {
+        const r = await api.get<{ items: DriverOption[] }>(
+          `/admin/drivers?status=APPROVED&limit=8${q ? `&search=${encodeURIComponent(q)}` : ""}`,
+        );
+        if (active) setDriverResults(r.data.items);
+      } catch { if (active) setDriverResults([]); }
+      finally { if (active) setDriverLoading(false); }
+    }, 300);
+    return () => { active = false; clearTimeout(t); };
+  }, [driverQuery, selected]);
+
+  const assignDriver = async (driverProfileId: string) => {
+    if (!selected) return;
+    setAssigning(true);
+    try {
+      await api.post(`/admin/orders/${selected.id}/assign`, { driverProfileId });
+      setSelected(null);
+      void load();
+    } catch (e) { alert((e as Error).message); }
+    finally { setAssigning(false); }
   };
 
   const cancelOrder = async (id: string) => {
@@ -128,7 +170,7 @@ export default function AdminOrdersPage() {
       <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: 16, overflow: "hidden" }}>
         {loading ? (
           <div style={{ padding: 60, textAlign: "center" }}>
-            <span style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", animation: "spin .8s linear infinite", display: "inline-block" }}/>
+            <span style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", animation: "spin .8s linear infinite", display: "inline-block" }}/>
           </div>
         ) : orders.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
@@ -166,11 +208,11 @@ export default function AdminOrdersPage() {
                     {/* Route */}
                     <td style={{ padding: "12px 14px", maxWidth: 220 }}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22d3ee", marginTop: 4, flexShrink: 0 }}/>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--brand-secondary)", marginTop: 4, flexShrink: 0 }}/>
                         <span style={{ color: "var(--text-secondary)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{o.pickupAddress}</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 1, background: "#f472b6", marginTop: 4, flexShrink: 0 }}/>
+                        <div style={{ width: 6, height: 6, borderRadius: 1, background: "var(--brand-pink)", marginTop: 4, flexShrink: 0 }}/>
                         <span style={{ color: "var(--text-secondary)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{o.dropoffAddress}</span>
                       </div>
                     </td>
@@ -189,7 +231,7 @@ export default function AdminOrdersPage() {
                     </td>
                     {/* Price */}
                     <td style={{ padding: "12px 14px", whiteSpace: "nowrap" }}>
-                      <span style={{ fontWeight: 700, color: "#34d399" }}>{o.quotedPrice.toLocaleString("vi-VN")}đ</span>
+                      <span style={{ fontWeight: 700, color: "var(--brand-emerald)" }}>{o.quotedPrice.toLocaleString("vi-VN")}đ</span>
                     </td>
                     {/* Status */}
                     <td style={{ padding: "12px 14px" }}>
@@ -202,7 +244,7 @@ export default function AdminOrdersPage() {
                         {STATUS_LABEL[o.status] ?? o.status}
                       </span>
                       {o.matches[0]?.driverProfile && (
-                        <div style={{ fontSize: 10, color: "#22d3ee", marginTop: 3, display: "flex", alignItems: "center", gap: 3 }}>
+                        <div style={{ fontSize: 10, color: "var(--brand-secondary)", marginTop: 3, display: "flex", alignItems: "center", gap: 3 }}>
                           <CarIcon size={9} color="#22d3ee"/>
                           {o.matches[0].driverProfile.user.fullName ?? o.matches[0].driverProfile.vehiclePlate}
                         </div>
@@ -280,14 +322,14 @@ export default function AdminOrdersPage() {
               <Section title="Tuyến đường" icon={<RouteIcon size={13} color="#22d3ee"/>}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
                   <div style={{ display: "flex", gap: 10 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22d3ee", marginTop: 4, flexShrink: 0 }}/>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--brand-secondary)", marginTop: 4, flexShrink: 0 }}/>
                     <div>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>Điểm đón</div>
                       <div style={{ fontSize: 13, color: "var(--text-primary)" }}>{selected.pickupAddress}</div>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 10 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: "#f472b6", marginTop: 4, flexShrink: 0 }}/>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: "var(--brand-pink)", marginTop: 4, flexShrink: 0 }}/>
                     <div>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>Điểm trả</div>
                       <div style={{ fontSize: 13, color: "var(--text-primary)" }}>{selected.dropoffAddress}</div>
@@ -303,7 +345,7 @@ export default function AdminOrdersPage() {
               {/* Driver info */}
               {detailLoading ? (
                 <div style={{ display: "flex", justifyContent: "center", padding: 20 }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", animation: "spin .8s linear infinite", display: "inline-block" }}/>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", animation: "spin .8s linear infinite", display: "inline-block" }}/>
                 </div>
               ) : selected.matches.length > 0 && (
                 <Section title="Tài xế nhận đơn" icon={<CarIcon size={13} color="#22d3ee"/>}>
@@ -319,7 +361,7 @@ export default function AdminOrdersPage() {
                             <Row label="Loại xe"      value={dp.vehicleType}/>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-subtle)" }}>
                               <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Đánh giá</span>
-                              <span style={{ fontSize: 13, fontWeight: 500, color: "#fbbf24", display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--brand-amber)", display: "flex", alignItems: "center", gap: 4 }}>
                                 <StarIcon size={12} color="#fbbf24"/> {dp.rating.toFixed(1)}
                               </span>
                             </div>
@@ -330,6 +372,60 @@ export default function AdminOrdersPage() {
                       </div>
                     );
                   })}
+                </Section>
+              )}
+
+              {/* Gán tài xế (chỉ đơn đang chờ) */}
+              {selected.status === "PENDING" && (
+                <Section title="Gán tài xế thủ công" icon={<CarIcon size={13} color="#34d399"/>}>
+                  <input
+                    value={driverQuery}
+                    onChange={(e) => setDriverQuery(e.target.value)}
+                    placeholder="Tìm theo tên, SĐT hoặc biển số xe..."
+                    style={{
+                      width: "100%", padding: "9px 12px", borderRadius: 9, marginBottom: 10,
+                      background: "var(--bg-surface)", border: "1px solid var(--border-subtle)",
+                      color: "var(--text-primary)", fontSize: 13, outline: "none",
+                    }}
+                  />
+                  {driverLoading ? (
+                    <div style={{ display: "flex", justifyContent: "center", padding: 14 }}>
+                      <span style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", animation: "spin .8s linear infinite", display: "inline-block" }}/>
+                    </div>
+                  ) : driverResults.length === 0 ? (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: "10px 0" }}>
+                      Không tìm thấy tài xế đã duyệt phù hợp
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 240, overflowY: "auto" }}>
+                      {driverResults.map((d) => (
+                        <div key={d.id} style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                          padding: "9px 11px", borderRadius: 10,
+                          background: "var(--bg-surface)", border: "1px solid var(--border-subtle)",
+                        }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 6 }}>
+                              <CarIcon size={11} color="#22d3ee"/>
+                              {d.user.fullName ?? "Tài xế"} · {d.vehiclePlate}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ display: "flex", alignItems: "center", gap: 3 }}><PhoneIcon size={9}/> {d.user.phone ?? "—"}</span>
+                              <span>{d.vehicleType}</span>
+                              <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--brand-amber)" }}><StarIcon size={9} color="#fbbf24"/> {d.rating.toFixed(1)}</span>
+                            </div>
+                          </div>
+                          <button onClick={() => assignDriver(d.id)} disabled={assigning} style={{
+                            flexShrink: 0, padding: "6px 14px", borderRadius: 8, cursor: assigning ? "not-allowed" : "pointer",
+                            background: "rgba(52,211,153,.12)", border: "1px solid rgba(52,211,153,.4)",
+                            color: "var(--brand-emerald)", fontSize: 12, fontWeight: 700,
+                          }}>
+                            {assigning ? "..." : "Gán"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </Section>
               )}
 
@@ -369,7 +465,7 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border-subtle)" }}>
       <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: highlight ? 700 : 500, color: highlight ? "#34d399" : "var(--text-primary)" }}>{value}</span>
+      <span style={{ fontSize: 13, fontWeight: highlight ? 700 : 500, color: highlight ? "var(--brand-emerald)" : "var(--text-primary)" }}>{value}</span>
     </div>
   );
 }

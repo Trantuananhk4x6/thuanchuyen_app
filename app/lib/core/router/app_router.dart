@@ -11,6 +11,7 @@ import '../../features/customer/home/screens/customer_home_screen.dart';
 import '../../features/customer/booking/screens/booking_screen.dart';
 import '../../features/customer/trips/screens/customer_trips_screen.dart';
 import '../../features/customer/trips/screens/trip_detail_screen.dart';
+import '../../features/customer/trips/screens/live_tracking_screen.dart';
 
 // Driver
 import '../../features/driver/home/screens/driver_home_screen.dart';
@@ -127,6 +128,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // Customer standalone (full-page, pushes on top of shell)
+      GoRoute(
+        path: '/customer/trips/:id/track',
+        builder: (_, state) => LiveTrackingScreen(tripId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: '/customer/trips/:id',
         builder: (_, state) => TripDetailScreen(tripId: state.pathParameters['id']!),

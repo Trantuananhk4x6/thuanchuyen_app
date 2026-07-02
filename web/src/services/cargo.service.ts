@@ -11,21 +11,39 @@ import { findUserById } from "@/repositories/user.repository";
 
 /* ── Pricing ────────────────────────────────────────────────────────────── */
 
-/** Tính giá vận chuyển hàng dựa trên trọng lượng + khoảng cách ước tính */
+interface CargoTier { upToKg: number; pricePerKg: number }
+interface CargoPricingConf {
+  basePricePerKg?: number;
+  minCharge?: number;
+  weightTiers?: CargoTier[];
+  perKmFee?: number; // tùy chọn, mặc định 0 (model admin không có phí theo km)
+}
+
+/**
+ * Tính giá vận chuyển hàng theo ĐÚNG cấu hình admin ghi (cargoPricing):
+ * đơn giá theo bậc trọng lượng (weightTiers) → fallback basePricePerKg,
+ * sàn tối thiểu minCharge. (Trước đây đọc nhầm baseFee/perKgFee/perKmFee
+ * mà không writer nào set → luôn về giá mặc định cứng.)
+ */
 export async function quoteCargo(
   distanceKm: number,
   weightKg: number,
 ): Promise<number> {
   const pricing = await getActivePricing();
-  const cargoConf = pricing?.cargoPricing as
-    | { baseFee: number; perKgFee: number; perKmFee: number }
-    | null;
+  const conf = (pricing?.cargoPricing ?? null) as CargoPricingConf | null;
 
-  const baseFee   = cargoConf?.baseFee   ?? 10_000;
-  const perKgFee  = cargoConf?.perKgFee  ?? 500;
-  const perKmFee  = cargoConf?.perKmFee  ?? 800;
+  const basePricePerKg = conf?.basePricePerKg ?? 3_000;
+  const minCharge      = conf?.minCharge ?? 15_000;
+  const tiers = Array.isArray(conf?.weightTiers)
+    ? [...conf!.weightTiers].sort((a, b) => a.upToKg - b.upToKg)
+    : [];
 
-  return Math.round(baseFee + weightKg * perKgFee + distanceKm * perKmFee);
+  const tier = tiers.find((t) => weightKg <= t.upToKg);
+  const pricePerKg = tier?.pricePerKg ?? basePricePerKg;
+  const perKmFee = typeof conf?.perKmFee === "number" ? conf.perKmFee : 0;
+
+  const raw = weightKg * pricePerKg + distanceKm * perKmFee;
+  return Math.max(minCharge, Math.round(raw));
 }
 
 /* ── Create ─────────────────────────────────────────────────────────────── */
@@ -133,33 +151,29 @@ export async function updateDriverStreak(driverProfileId: string): Promise<void>
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const streak = await prisma.driverStreak.upsert({
-    where: { driverProfileId },
-    create: { driverProfileId, currentStreak: 1, longestStreak: 1, lastTripDate: today },
-    update: {},
-  });
+  // Đọc trạng thái hiện tại TRƯỚC để phân biệt "chuyến đầu trong ngày" với
+  // "đã tính hôm nay rồi" → chỉ thưởng khi streak thực sự tăng (chống cộng thưởng
+  // mỗi chuyến trong cùng một ngày).
+  const existing = await prisma.driverStreak.findUnique({ where: { driverProfileId } });
 
-  const lastDate = streak.lastTripDate;
-  if (!lastDate) return;
-
-  const lastDay = new Date(lastDate);
-  lastDay.setHours(0, 0, 0, 0);
-  const diffDays = Math.round((today.getTime() - lastDay.getTime()) / 86_400_000);
-
-  let newStreak = streak.currentStreak;
-  if (diffDays === 1) {
-    newStreak += 1;
-  } else if (diffDays > 1) {
+  let newStreak: number;
+  if (!existing) {
     newStreak = 1;
+  } else {
+    const lastDay = existing.lastTripDate ? new Date(existing.lastTripDate) : null;
+    if (lastDay) lastDay.setHours(0, 0, 0, 0);
+    const diffDays = lastDay ? Math.round((today.getTime() - lastDay.getTime()) / 86_400_000) : 999;
+    if (diffDays === 0) return; // đã tính & thưởng hôm nay rồi
+    newStreak = diffDays === 1 ? existing.currentStreak + 1 : 1;
   }
-  // diffDays === 0 → đã tính hôm nay rồi, không đổi
 
-  const longest = Math.max(newStreak, streak.longestStreak);
+  const longest = Math.max(newStreak, existing?.longestStreak ?? 0);
   const bonus   = Math.min(newStreak * STREAK_BONUS_PER_DAY, MAX_DAILY_BONUS);
 
-  await prisma.driverStreak.update({
+  await prisma.driverStreak.upsert({
     where: { driverProfileId },
-    data: {
+    create: { driverProfileId, currentStreak: newStreak, longestStreak: longest, lastTripDate: today, bonusEarnedTotal: bonus },
+    update: {
       currentStreak: newStreak,
       longestStreak: longest,
       lastTripDate: today,

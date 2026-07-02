@@ -3,6 +3,7 @@ import type {
   SectionConfig, BlogPostSummary, EventSummary,
   FooterGroup,
 } from "@/types/landing";
+import { SearchIcon, MapPinIcon, CreditCardIcon, DocumentIcon } from "@/components/ui/Icons";
 
 /* ── Constants ────────────────────────────────────────────────────── */
 
@@ -24,48 +25,35 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const EVENT_TYPE_COLORS: Record<string, string> = {
-  CASHBACK:     "#34d399",
-  DOUBLE_POINT: "#f472b6",
-  DISCOUNT:     "#fb923c",
-  FREE_RIDE:    "#6366f1",
-  STREAK_BONUS: "#22d3ee",
-  REFERRAL:     "#a78bfa",
+  CASHBACK:     "#12B886",
+  DOUBLE_POINT: "#0BA5C7",
+  DISCOUNT:     "#D97706",
+  FREE_RIDE:    "#00A18B",
+  STREAK_BONUS: "#00806E",
+  REFERRAL:     "#0F766E",
 };
 
 const HOW_IT_WORKS_STEPS = [
   {
     step: "01",
-    color: "#6366f1",
+    color: "#00A18B",
     title: "Đặt chuyến trong 30 giây",
     desc: "Nhập điểm đi, điểm đến và giờ xuất phát. AI sẽ tìm tài xế phù hợp nhất trong bán kính tuyến đường của bạn.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-      </svg>
-    ),
+    icon: <SearchIcon size={24} />,
   },
   {
     step: "02",
-    color: "#22d3ee",
+    color: "#0BA5C7",
     title: "Theo dõi hành trình thực",
     desc: "Biết vị trí xe theo thời gian thực. Chia sẻ hành trình với người thân chỉ bằng một cú chạm.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-      </svg>
-    ),
+    icon: <MapPinIcon size={24} />,
   },
   {
     step: "03",
-    color: "#34d399",
+    color: "#12B886",
     title: "Thanh toán & đánh giá",
     desc: "Thanh toán qua VNPay, MoMo, PayOS hoặc ví Thuận Chuyến. Đánh giá tài xế để xây dựng cộng đồng tin cậy.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-        <line x1="1" y1="10" x2="23" y2="10"/>
-      </svg>
-    ),
+    icon: <CreditCardIcon size={24} />,
   },
 ];
 
@@ -92,24 +80,24 @@ function SectionHeader({ eyebrow, title, desc, ctaLabel, ctaHref }: {
       <div>
         <div style={{
           display:"inline-block", padding:"3px 10px", borderRadius:99,
-          background:"rgba(99,102,241,.12)", border:"1px solid rgba(99,102,241,.25)",
-          fontSize:11, fontWeight:700, color:"#6366f1", letterSpacing:0.5,
+          background:"var(--bg-active)", border:"1px solid var(--border-medium)",
+          fontSize:11, fontWeight:700, color:"var(--brand-primary)", letterSpacing:0.5,
           marginBottom:10, textTransform:"uppercase",
         }}>{eyebrow}</div>
-        <h2 style={{ fontSize:"clamp(20px,2.5vw,28px)", fontWeight:800, color:"#f1f5f9", marginBottom:8 }}>
+        <h2 style={{ fontSize:"clamp(20px,2.5vw,28px)", fontWeight:800, color:"var(--text-primary)", marginBottom:8 }}>
           {title}
         </h2>
-        <p style={{ color:"#64748b", fontSize:14, lineHeight:1.7, maxWidth:560 }}>{desc}</p>
+        <p style={{ color:"var(--text-muted)", fontSize:14, lineHeight:1.7, maxWidth:560 }}>{desc}</p>
       </div>
       {ctaLabel && ctaHref && (
         <a href={ctaHref} style={{
           display:"inline-flex", alignItems:"center", gap:6,
           padding:"8px 18px", borderRadius:10,
-          border:"1px solid rgba(99,102,241,.3)",
-          color:"#818cf8", fontSize:13, fontWeight:600,
+          border:"1px solid var(--border-medium)",
+          color:"var(--brand-primary-dark)", fontSize:13, fontWeight:600,
           textDecoration:"none", transition:"all .2s", whiteSpace:"nowrap",
         }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(99,102,241,.1)"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--bg-active)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "none"; }}
         >
           {ctaLabel} →
@@ -138,11 +126,11 @@ function EventsSection({ section, events }: { section: SectionConfig; events: Ev
         gap:16, marginTop:32,
       }}>
         {events.map((ev) => {
-          const color = EVENT_TYPE_COLORS[ev.type] ?? "#6366f1";
+          const color = EVENT_TYPE_COLORS[ev.type] ?? "#00A18B";
           const left  = daysLeft(ev.endsAt);
           return (
             <div key={ev.id} style={{
-              background:"rgba(15,23,42,.8)",
+              background:"var(--bg-surface)",
               border:`1px solid ${color}28`,
               borderRadius:16, overflow:"hidden", position:"relative",
               transition:"transform .2s, border-color .2s",
@@ -160,15 +148,15 @@ function EventsSection({ section, events }: { section: SectionConfig; events: Ev
                     {EVENT_TYPE_LABELS[ev.type] ?? ev.type}
                   </span>
                   {left <= 3 ? (
-                    <span style={{ fontSize:11, color:"#f87171", fontWeight:600 }}>Còn {left} ngày</span>
+                    <span style={{ fontSize:11, color:"var(--danger)", fontWeight:600 }}>Còn {left} ngày</span>
                   ) : (
                     <span style={{ fontSize:11, color:"#475569" }}>Đến {fmtDate(ev.endsAt)}</span>
                   )}
                 </div>
-                <h3 style={{ color:"#f1f5f9", fontSize:15, fontWeight:700, marginBottom:8, lineHeight:1.4 }}>
+                <h3 style={{ color:"var(--text-primary)", fontSize:15, fontWeight:700, marginBottom:8, lineHeight:1.4 }}>
                   {ev.name}
                 </h3>
-                <p style={{ color:"#64748b", fontSize:13, lineHeight:1.6, marginBottom:14 }}>
+                <p style={{ color:"var(--text-muted)", fontSize:13, lineHeight:1.6, marginBottom:14 }}>
                   {ev.description.slice(0, 120)}{ev.description.length > 120 ? "…" : ""}
                 </p>
                 <a href="/login" style={{
@@ -210,13 +198,13 @@ function PostsSection({ section, posts }: { section: SectionConfig; posts: BlogP
             href={`/blog/${post.slug}`}
             style={{
               display:"block", textDecoration:"none",
-              background:"rgba(15,23,42,.7)",
-              border:"1px solid rgba(99,102,241,.1)",
+              background:"var(--bg-surface)",
+              border:"1px solid var(--border-subtle)",
               borderRadius:16, overflow:"hidden",
               transition:"border-color .2s, transform .2s",
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor="rgba(99,102,241,.3)"; (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor="rgba(99,102,241,.1)"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor="var(--brand-primary)"; (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor="var(--border-subtle)"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
           >
             {post.coverImage ? (
               <div style={{ height:160, overflow:"hidden" }}>
@@ -230,32 +218,27 @@ function PostsSection({ section, posts }: { section: SectionConfig; posts: BlogP
               </div>
             ) : (
               <div style={{
-                height:120, background:"linear-gradient(135deg,rgba(99,102,241,.15),rgba(34,211,238,.08))",
+                height:120, background:"linear-gradient(135deg,rgba(0,194,168,.15),rgba(11,165,199,.08))",
                 display:"flex", alignItems:"center", justifyContent:"center",
               }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,.4)" strokeWidth="1.5">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-                  <polyline points="10 9 9 9 8 9"/>
-                </svg>
+                <DocumentIcon size={32} color="rgba(0,128,110,.5)" />
               </div>
             )}
             <div style={{ padding:"16px 18px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
                 <span style={{
                   padding:"2px 8px", borderRadius:99, fontSize:10, fontWeight:700,
-                  background:"rgba(99,102,241,.15)", color:"#818cf8",
-                  border:"1px solid rgba(99,102,241,.2)",
+                  background:"var(--bg-active)", color:"var(--brand-primary-dark)",
+                  border:"1px solid var(--border-medium)",
                 }}>
                   {CATEGORY_LABELS[post.category] ?? post.category}
                 </span>
                 <span style={{ fontSize:11, color:"#475569" }}>{post.readTime} phút đọc</span>
               </div>
-              <h3 style={{ color:"#f1f5f9", fontSize:15, fontWeight:700, lineHeight:1.4, marginBottom:8 }}>
+              <h3 style={{ color:"var(--text-primary)", fontSize:15, fontWeight:700, lineHeight:1.4, marginBottom:8 }}>
                 {post.title}
               </h3>
-              <p style={{ color:"#64748b", fontSize:13, lineHeight:1.6, marginBottom:12 }}>
+              <p style={{ color:"var(--text-muted)", fontSize:13, lineHeight:1.6, marginBottom:12 }}>
                 {post.summary.slice(0, 100)}{post.summary.length > 100 ? "…" : ""}
               </p>
               {post.publishedAt && (
@@ -292,19 +275,19 @@ function HowItWorksSection({ section }: { section: SectionConfig }) {
               <div className="hiw-connector" style={{
                 position:"absolute", top:32, left:"calc(50% + 70px)",
                 width:"calc(100% - 70px)", height:1,
-                background:"linear-gradient(90deg,rgba(99,102,241,.4),transparent)",
+                background:"linear-gradient(90deg,var(--border-medium),transparent)",
                 display:"none",
               }} />
             )}
             <div style={{
-              background:"rgba(15,23,42,.7)",
-              border:"1px solid rgba(99,102,241,.12)",
+              background:"var(--bg-surface)",
+              border:"1px solid var(--border-subtle)",
               borderRadius:18, padding:"28px 24px",
               position:"relative", overflow:"hidden",
               transition:"border-color .2s, transform .2s",
             }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor=`${step.color}40`; (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor="rgba(99,102,241,.12)"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor="var(--border-subtle)"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
             >
               {/* Background number */}
               <div style={{
@@ -329,10 +312,10 @@ function HowItWorksSection({ section }: { section: SectionConfig }) {
               }}>
                 BƯỚC {step.step}
               </div>
-              <h3 style={{ color:"#f1f5f9", fontSize:16, fontWeight:700, marginBottom:10, lineHeight:1.4 }}>
+              <h3 style={{ color:"var(--text-primary)", fontSize:16, fontWeight:700, marginBottom:10, lineHeight:1.4 }}>
                 {step.title}
               </h3>
-              <p style={{ color:"#64748b", fontSize:13, lineHeight:1.7 }}>{step.desc}</p>
+              <p style={{ color:"var(--text-muted)", fontSize:13, lineHeight:1.7 }}>{step.desc}</p>
             </div>
           </div>
         ))}
@@ -342,14 +325,50 @@ function HowItWorksSection({ section }: { section: SectionConfig }) {
   );
 }
 
+/* ── Banner chiến dịch (ảnh full-width, có thể click) ─────────────── */
+
+function BannerSection({ section }: { section: SectionConfig }) {
+  if (!section.imageUrl) return null;
+  const inner = (
+    <div style={{
+      position:"relative", borderRadius:16, overflow:"hidden",
+      border:"1px solid var(--border-subtle)", background:"var(--bg-overlay)",
+    }}>
+      <img
+        src={section.imageUrl}
+        alt={section.title || "Banner"}
+        style={{ width:"100%", height:"clamp(160px, 32vw, 400px)", display:"block", objectFit:"cover" }}
+      />
+      {section.title && (
+        <div style={{
+          position:"absolute", left:0, right:0, bottom:0,
+          padding:"28px 22px 18px",
+          background:"linear-gradient(to top, rgba(0,0,0,.6), transparent)",
+          color:"#fff",
+        }}>
+          <div style={{ fontSize:"clamp(18px,2.6vw,26px)", fontWeight:800, lineHeight:1.25 }}>{section.title}</div>
+          {section.subtitle && <div style={{ fontSize:14, opacity:.92, marginTop:4 }}>{section.subtitle}</div>}
+        </div>
+      )}
+    </div>
+  );
+  return (
+    <section style={{ marginBottom:72 }}>
+      {section.ctaHref
+        ? <a href={section.ctaHref} style={{ display:"block", textDecoration:"none" }}>{inner}</a>
+        : inner}
+    </section>
+  );
+}
+
 /* ── Footer ───────────────────────────────────────────────────────── */
 
 function LandingFooter({ groups, copy }: { groups: FooterGroup[]; copy: string }) {
   return (
     <footer style={{
-      borderTop: "1px solid rgba(99,102,241,.1)",
+      borderTop: "1px solid var(--border-subtle)",
       padding: "48px 0 32px",
-      background: "rgba(4,8,16,.6)",
+      background: "var(--bg-surface)",
     }}>
       <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 24px" }}>
         <div style={{
@@ -361,7 +380,7 @@ function LandingFooter({ groups, copy }: { groups: FooterGroup[]; copy: string }
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
               <img src="/logo.png" alt="Thuận Chuyến" style={{ width:32, height:32, borderRadius:8, objectFit:"cover" }} />
-              <span style={{ fontWeight:700, fontSize:15, color:"#f1f5f9" }}>Thuận Chuyến</span>
+              <span style={{ fontWeight:700, fontSize:15, color:"var(--text-primary)" }}>Thuận Chuyến</span>
             </div>
             <p style={{ color:"#475569", fontSize:13, lineHeight:1.7 }}>
               Nền tảng ghép xe thế hệ mới. Kết nối tài xế &amp; hành khách thông minh bằng AI.
@@ -370,7 +389,7 @@ function LandingFooter({ groups, copy }: { groups: FooterGroup[]; copy: string }
           {/* Link groups */}
           {groups.map((group) => (
             <div key={group.id}>
-              <div style={{ color:"#94a3b8", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:16 }}>
+              <div style={{ color:"var(--text-secondary)", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:16 }}>
                 {group.label}
               </div>
               <ul style={{ listStyle:"none", padding:0, margin:0, display:"flex", flexDirection:"column", gap:10 }}>
@@ -381,7 +400,7 @@ function LandingFooter({ groups, copy }: { groups: FooterGroup[]; copy: string }
                       target={link.external ? "_blank" : undefined}
                       rel={link.external ? "noopener" : undefined}
                       style={{ color:"#475569", fontSize:13, textDecoration:"none", transition:"color .15s" }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#94a3b8"; }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#475569"; }}
                     >
                       {link.label}
@@ -394,19 +413,19 @@ function LandingFooter({ groups, copy }: { groups: FooterGroup[]; copy: string }
         </div>
         {/* Bottom bar */}
         <div style={{
-          borderTop:"1px solid rgba(255,255,255,.06)",
+          borderTop:"1px solid var(--border-subtle)",
           paddingTop:24,
           display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12,
         }}>
           <span style={{ color:"#334155", fontSize:12 }}>{copy}</span>
           <div style={{ display:"flex", gap:16 }}>
             {[
-              { label:"Điều khoản", href:"/terms" },
-              { label:"Bảo mật",    href:"/privacy" },
+              { label:"Điều khoản", href:"#" },
+              { label:"Bảo mật",    href:"#" },
             ].map((l) => (
               <a key={l.href} href={l.href}
                 style={{ color:"#334155", fontSize:12, textDecoration:"none", transition:"color .15s" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#64748b"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#334155"; }}>
                 {l.label}
               </a>
@@ -430,13 +449,14 @@ interface Props {
 
 export default function BelowFold({ sections, posts, events, footerGroups, footerCopy }: Props) {
   return (
-    <div style={{ background:"#080e1a", position:"relative", zIndex:5 }}>
+    <div style={{ background:"var(--bg-deep)", position:"relative", zIndex:5 }}>
       {sections.length > 0 && (
         <div style={{ maxWidth:1120, margin:"0 auto", padding:"72px 24px 0" }}>
           {sections.map((section) => {
             if (section.type === "events")       return <EventsSection      key={section.id} section={section} events={events} />;
             if (section.type === "posts")        return <PostsSection       key={section.id} section={section} posts={posts} />;
             if (section.type === "how_it_works") return <HowItWorksSection  key={section.id} section={section} />;
+            if (section.type === "banner")       return <BannerSection      key={section.id} section={section} />;
             return null;
           })}
         </div>

@@ -1,4 +1,4 @@
-const ZALO_ZNS_URL = "https://business.openapi.zalo.me/message/template";
+const ZALO_ZNS_URL = process.env.ZALO_ZNS_API_URL ?? "https://business.openapi.zalo.me/message/template";
 
 export interface SendZaloOptions {
   phone: string;

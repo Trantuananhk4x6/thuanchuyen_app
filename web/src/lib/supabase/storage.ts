@@ -1,9 +1,61 @@
 import { createServiceClient } from "./client";
 
-const KYC_BUCKET = "kyc-documents";
-const AVATAR_BUCKET = "avatars";
+export const KYC_BUCKET = "kyc-documents";
+export const AVATAR_BUCKET = "avatars";
+export const MEDIA_BUCKET = "media";
 
 export type UploadResult = { path: string; signedUrl?: string };
+
+/** Tạo bucket KYC (private) nếu chưa có — idempotent. */
+export async function ensureKycBucket(): Promise<void> {
+  const supabase = createServiceClient();
+  if (!supabase) return;
+  try {
+    await supabase.storage.createBucket(KYC_BUCKET, { public: false });
+  } catch {
+    /* đã tồn tại — bỏ qua */
+  }
+}
+
+/** Tạo bucket avatar (PUBLIC — ảnh đại diện hiển thị công khai) nếu chưa có. */
+export async function ensureAvatarBucket(): Promise<void> {
+  const supabase = createServiceClient();
+  if (!supabase) return;
+  try {
+    await supabase.storage.createBucket(AVATAR_BUCKET, { public: true });
+  } catch {
+    /* đã tồn tại — bỏ qua */
+  }
+}
+
+/** Tạo bucket media (PUBLIC — ảnh banner/blog/sự kiện… hiển thị công khai) nếu chưa có. */
+export async function ensureMediaBucket(): Promise<void> {
+  const supabase = createServiceClient();
+  if (!supabase) return;
+  try {
+    await supabase.storage.createBucket(MEDIA_BUCKET, { public: true });
+  } catch {
+    /* đã tồn tại — bỏ qua */
+  }
+}
+
+/** Ký nhiều path cùng lúc (1 request) → map path → signedUrl. */
+export async function createDownloadSignedUrls(
+  bucket: string,
+  paths: string[],
+  expiresInSeconds = 3600,
+): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  const unique = Array.from(new Set(paths.filter(Boolean)));
+  if (unique.length === 0) return out;
+  const supabase = createServiceClient();
+  if (!supabase) return out;
+  const { data } = await supabase.storage.from(bucket).createSignedUrls(unique, expiresInSeconds);
+  for (const d of data ?? []) {
+    if (d.path && d.signedUrl) out[d.path] = d.signedUrl;
+  }
+  return out;
+}
 
 /**
  * Tạo signed URL để client upload trực tiếp lên Supabase Storage.

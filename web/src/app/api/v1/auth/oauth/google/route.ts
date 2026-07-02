@@ -25,20 +25,26 @@ export async function POST(req: NextRequest) {
 
   // Verify Google ID token
   let sub: string, email: string, name: string | undefined, picture: string | undefined;
+  let emailVerified: unknown;
   try {
     const { payload } = await jwtVerify(parsed.data.idToken, GOOGLE_JWKS, {
       issuer: [GOOGLE_ISSUER, "accounts.google.com"],
       audience: process.env.GOOGLE_CLIENT_ID!,
     });
-    sub     = payload.sub as string;
-    email   = payload.email as string;
-    name    = payload.name as string | undefined;
-    picture = payload.picture as string | undefined;
+    sub           = payload.sub as string;
+    email         = payload.email as string;
+    emailVerified = (payload as Record<string, unknown>).email_verified;
+    name          = payload.name as string | undefined;
+    picture       = payload.picture as string | undefined;
   } catch {
     return Errors.unauthorized("Google token không hợp lệ hoặc đã hết hạn");
   }
 
   if (!email) return Errors.validation("Không lấy được email từ Google");
+  // Chặn chiếm tài khoản qua email chưa xác minh (không được link vào tài khoản sẵn có).
+  if (emailVerified !== true && emailVerified !== "true") {
+    return Errors.unauthorized("Email Google chưa được xác minh");
+  }
 
   // Find or create user
   let user = await prisma.user.findFirst({

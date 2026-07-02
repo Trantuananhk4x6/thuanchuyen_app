@@ -1,5 +1,5 @@
 name: thuanduong_app
-description: Thuận Đường — ứng dụng ghép chuyến xe liên tỉnh Việt Nam
+description: Thuận Chuyến — ứng dụng ghép chuyến xe liên tỉnh Việt Nam
 publish_to: none
 version: 1.0.0+1
 
@@ -44,6 +44,7 @@ dependencies:
   # Social auth
   google_sign_in: ^6.2.1
   sign_in_with_apple: ^8.1.0
+  flutter_facebook_auth: ^7.1.7
 
   # Utils
   equatable: ^2.0.5

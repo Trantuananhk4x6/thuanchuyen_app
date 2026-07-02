@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/context";
 import { SubmitKycSchema } from "@/validators/driver.validator";
 import { submitKyc } from "@/services/driver.service";
 import { findDriverByUserId } from "@/repositories/driver.repository";
+import { KYC_BUCKET, createDownloadSignedUrls } from "@/lib/supabase/storage";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -12,10 +13,20 @@ export async function GET(req: NextRequest) {
   const driver = await findDriverByUserId(auth.payload.userId);
   if (!driver) return Errors.notFound("Chưa có hồ sơ KYC");
 
+  // Cột url lưu PATH (private bucket) → ký signed URL ngắn hạn để client hiển thị.
+  const signed = await createDownloadSignedUrls(KYC_BUCKET, driver.documents.map((d) => d.url));
+
   return ok({
     verificationStatus: driver.verificationStatus,
     rejectReason: driver.rejectReason,
-    documents: driver.documents,
+    vehicleType: driver.vehicleType,
+    vehiclePlate: driver.vehiclePlate,
+    seats: driver.seats,
+    cccdNumber: driver.cccdNumber,
+    address: driver.address,
+    allowCargo: driver.allowCargo,
+    cargoCapacityKg: driver.cargoCapacityKg,
+    documents: driver.documents.map((d) => ({ id: d.id, type: d.type, path: d.url, url: signed[d.url] ?? null })),
   });
 }
 

@@ -60,7 +60,7 @@ export default function DriverMessagesPage() {
 
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
-      <div style={{ width: 36, height: 36, border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+      <div style={{ width: 36, height: 36, border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -69,11 +69,11 @@ export default function DriverMessagesPage() {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10 }}>
-          <ChatIcon size={22} color="#a78bfa"/> Tin nhắn hành khách
+          <ChatIcon size={22} color="var(--brand-violet)"/> Tin nhắn hành khách
         </h1>
         {totalUnread > 0 && (
           <span style={{
-            background: "#ef4444", color: "#fff",
+            background: "var(--danger)", color: "#fff",
             borderRadius: 99, padding: "2px 8px",
             fontSize: 12, fontWeight: 700,
           }}>
@@ -111,7 +111,7 @@ export default function DriverMessagesPage() {
                     display: "flex", gap: 10, padding: "12px 14px",
                     borderBottom: "1px solid var(--border-subtle)", cursor: "pointer",
                     background: isActive ? "rgba(167,139,250,.12)" : "transparent",
-                    borderLeft: isActive ? "3px solid #a78bfa" : "3px solid transparent",
+                    borderLeft: isActive ? "3px solid var(--brand-violet)" : "3px solid transparent",
                     transition: "all .15s",
                   }}
                   onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--bg-overlay)"; }}
@@ -122,7 +122,7 @@ export default function DriverMessagesPage() {
                     {c.unreadCount > 0 && (
                       <span style={{
                         position: "absolute", top: -2, right: -2,
-                        background: "#ef4444", color: "#fff",
+                        background: "var(--danger)", color: "#fff",
                         borderRadius: "50%", width: 16, height: 16,
                         fontSize: 9, fontWeight: 700,
                         display: "flex", alignItems: "center", justifyContent: "center",

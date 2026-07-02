@@ -1,6 +1,6 @@
-# Thuận Đường — Flutter App
+# Thuận Chuyến — Flutter App
 
-Ứng dụng di động cho nền tảng ghép chuyến xe liên tỉnh **Thuận Đường**.
+Ứng dụng di động cho nền tảng ghép chuyến xe liên tỉnh **Thuận Chuyến**.
 
 ## Setup
 

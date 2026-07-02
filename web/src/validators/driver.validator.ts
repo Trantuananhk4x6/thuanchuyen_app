@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+export const KYC_DOC_TYPES = [
+  "CCCD_FRONT",
+  "CCCD_BACK",
+  "DRIVER_LICENSE",
+  "VEHICLE_REGISTRATION",
+  "SELFIE",
+] as const;
+
+// Giấy tờ gửi kèm khi nộp hồ sơ: client gửi PATH (do /driver/kyc/upload trả về),
+// KHÔNG gửi URL tuỳ ý — server tự ký signed URL khi đọc và kiểm tra path thuộc về caller.
+export const KycSubmitDocumentSchema = z.object({
+  type: z.enum(KYC_DOC_TYPES),
+  path: z.string().min(1).max(300),
+});
+
 export const SubmitKycSchema = z.object({
   vehicleType: z.enum(["CAR", "TRUCK", "VAN"]),
   vehiclePlate: z
@@ -12,10 +27,12 @@ export const SubmitKycSchema = z.object({
   address: z.string().min(5).max(500),
   allowCargo: z.boolean().default(false),
   cargoCapacityKg: z.number().min(0).max(50000).optional(),
+  documents: z.array(KycSubmitDocumentSchema).max(10).optional(),
 });
 
+// Legacy: route /driver/kyc/documents (giữ tương thích, client mới không dùng)
 export const UploadDocumentSchema = z.object({
-  type: z.enum(["CCCD_FRONT", "CCCD_BACK", "VEHICLE_REGISTRATION", "DRIVER_LICENSE", "SELFIE"]),
+  type: z.enum(KYC_DOC_TYPES),
   url: z.string().url(),
 });
 

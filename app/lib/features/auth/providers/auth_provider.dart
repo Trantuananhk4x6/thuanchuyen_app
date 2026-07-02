@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../../data/api/api_client.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -73,7 +74,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _api.saveTokens(access: tokens.accessToken, refresh: tokens.refreshToken);
       state = AuthAuthenticated(tokens.user);
     } on ApiException catch (e) {
-      state = AuthOtpSent(email);
       state = AuthError(e.message);
     } catch (_) {
       state = const AuthError('Mã OTP không hợp lệ hoặc đã hết hạn.');
@@ -93,10 +93,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  // Web Client ID của Google (PHẢI trùng GOOGLE_CLIENT_ID ở backend) — bắt buộc
+  // để idToken trên Android có đúng audience mà backend verify. Truyền khi build:
+  //   --dart-define=GOOGLE_SERVER_CLIENT_ID=xxx.apps.googleusercontent.com
+  static const String _googleServerClientId =
+      String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
+
   Future<void> loginGoogle({String role = 'CUSTOMER'}) async {
     state = const AuthLoading();
     try {
-      final gsi = GoogleSignIn(scopes: ['email', 'profile']);
+      final gsi = GoogleSignIn(
+        scopes: const ['email', 'profile'],
+        serverClientId:
+            _googleServerClientId.isEmpty ? null : _googleServerClientId,
+      );
       final account = await gsi.signIn();
       if (account == null) { state = const AuthInitial(); return; }
       final auth = await account.authentication;
@@ -141,6 +151,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthError(e.message);
     } catch (e) {
       state = const AuthError('Đăng nhập Apple thất bại. Thử lại sau.');
+    }
+  }
+
+  Future<void> loginFacebook({String role = 'CUSTOMER'}) async {
+    state = const AuthLoading();
+    try {
+      final result = await FacebookAuth.instance.login(
+        permissions: const ['email', 'public_profile'],
+      );
+      if (result.status == LoginStatus.cancelled) {
+        state = const AuthInitial();
+        return;
+      }
+      if (result.status != LoginStatus.success || result.accessToken == null) {
+        state = const AuthError('Đăng nhập Facebook thất bại. Thử lại sau.');
+        return;
+      }
+
+      final tokens = await _repo.loginFacebook(
+        accessToken: result.accessToken!.tokenString,
+        role: role,
+      );
+      await _api.saveTokens(access: tokens.accessToken, refresh: tokens.refreshToken);
+      state = AuthAuthenticated(tokens.user);
+    } on ApiException catch (e) {
+      state = AuthError(e.message);
+    } catch (e) {
+      state = const AuthError('Đăng nhập Facebook thất bại. Thử lại sau.');
     }
   }
 

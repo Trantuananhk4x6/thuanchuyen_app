@@ -31,7 +31,7 @@ export const CreateTripRequestSchema = z.object({
 
 export const CreatePaymentSchema = z.object({
   tripId: z.string().cuid(),
-  gateway: z.enum(["PAYOS", "WALLET"]),
+  gateway: z.enum(["PAYOS"]),
 });
 
 export const CreateRatingSchema = z.object({

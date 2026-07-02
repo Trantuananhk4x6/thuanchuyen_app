@@ -48,7 +48,7 @@ function Avatar({ name, size = 36, url }: { name?: string | null; size?: number;
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: "linear-gradient(135deg,#6366f1,#22d3ee)",
+      background: "linear-gradient(135deg,var(--brand-primary),var(--brand-secondary))",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontSize: size * 0.4, fontWeight: 700, color: "#fff",
     }}>{init}</div>
@@ -235,7 +235,7 @@ export default function ChatWindow({ tripId, currentUserId, otherUser, open = tr
                 width: 34, height: 34, borderRadius: 10,
                 background: "rgba(52,211,153,.15)", border: "1px solid rgba(52,211,153,.3)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#34d399", fontSize: 16, textDecoration: "none", flexShrink: 0,
+                color: "var(--brand-emerald)", fontSize: 16, textDecoration: "none", flexShrink: 0,
               }}>
               📞
             </a>
@@ -247,7 +247,7 @@ export default function ChatWindow({ tripId, currentUserId, otherUser, open = tr
               width: 34, height: 34, borderRadius: 10,
               background: "rgba(99,102,241,.15)", border: "1px solid rgba(99,102,241,.3)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#6366f1", fontSize: 16, cursor: "pointer", flexShrink: 0,
+              color: "var(--brand-primary)", fontSize: 16, cursor: "pointer", flexShrink: 0,
             }}>
             🎥
           </button>
@@ -317,7 +317,7 @@ export default function ChatWindow({ tripId, currentUserId, otherUser, open = tr
                       padding: msg.type === "LOCATION" ? "8px 12px" : "8px 12px",
                       borderRadius: isMine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
                       background: isMine
-                        ? "linear-gradient(135deg,#6366f1,#818cf8)"
+                        ? "linear-gradient(135deg,var(--brand-primary),var(--brand-violet))"
                         : "var(--bg-elevated)",
                       color: isMine ? "#fff" : "var(--text-primary)",
                       fontSize: 13, lineHeight: 1.5,

@@ -59,6 +59,14 @@ class AuthRepository {
     );
   }
 
+  Future<AuthTokens> loginFacebook({required String accessToken, String role = 'CUSTOMER'}) {
+    return _api.post(
+      ApiConstants.oauthFacebook,
+      data: {'accessToken': accessToken, 'role': role},
+      fromJson: (d) => AuthTokens.fromJson(d as Map<String, dynamic>),
+    );
+  }
+
   Future<UserProfile> getProfile() {
     return _api.get(
       ApiConstants.profile,

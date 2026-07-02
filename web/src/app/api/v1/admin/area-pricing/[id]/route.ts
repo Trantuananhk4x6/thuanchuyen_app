@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { ok, Errors } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/context";
 import { UpdateAreaPricingSchema } from "@/validators/admin.validator";
-import { updateAreaPricing } from "@/repositories/pricing.repository";
+import { updateAreaPricing, deleteAreaPricing } from "@/repositories/pricing.repository";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAuth(req, "ADMIN");
@@ -14,4 +14,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const item = await updateAreaPricing(params.id, parsed.data);
   return ok({ areaPricing: item });
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await requireAuth(req, "ADMIN");
+  if ("error" in auth) return auth.error;
+
+  await deleteAreaPricing(params.id);
+  return ok({ deleted: true });
 }

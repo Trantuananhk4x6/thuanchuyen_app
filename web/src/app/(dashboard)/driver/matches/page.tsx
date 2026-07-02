@@ -114,10 +114,10 @@ function SuggestedTab() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <RouteIcon size={18} color="#22d3ee"/>
+            <RouteIcon size={18} color="var(--brand-secondary)"/>
             Chuyến chờ nhận
             {total > 0 && (
-              <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 12, fontWeight: 700, background: "rgba(34,211,238,.15)", color: "#22d3ee", border: "1px solid rgba(34,211,238,.3)" }}>
+              <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 12, fontWeight: 700, background: "rgba(34,211,238,.15)", color: "var(--brand-secondary)", border: "1px solid rgba(34,211,238,.3)" }}>
                 {total}
               </span>
             )}
@@ -203,10 +203,10 @@ function BrowseTab() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <SearchIcon size={18} color="#6366f1"/>
+            <SearchIcon size={18} color="var(--brand-primary)"/>
             Đơn đang chờ tài xế
             {total > 0 && (
-              <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 12, fontWeight: 700, background: "rgba(99,102,241,.15)", color: "#6366f1", border: "1px solid rgba(99,102,241,.3)" }}>
+              <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 12, fontWeight: 700, background: "rgba(99,102,241,.15)", color: "var(--brand-primary)", border: "1px solid rgba(99,102,241,.3)" }}>
                 {total}
               </span>
             )}
@@ -220,7 +220,7 @@ function BrowseTab() {
 
       {error && <ErrorBanner msg={error}/>}
       {success && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, marginBottom: 16, background: "rgba(52,211,153,.1)", border: "1px solid rgba(52,211,153,.3)", color: "#34d399", fontSize: 13, fontWeight: 600 }}>
+        <div style={{ padding: "10px 14px", borderRadius: 10, marginBottom: 16, background: "rgba(52,211,153,.1)", border: "1px solid rgba(52,211,153,.3)", color: "var(--brand-emerald)", fontSize: 13, fontWeight: 600 }}>
           ✓ {success}
         </div>
       )}
@@ -240,26 +240,26 @@ function BrowseTab() {
                 background: "var(--bg-surface)", border: `1px solid ${r.alreadyOffered ? "rgba(99,102,241,.3)" : "var(--border-subtle)"}`,
                 borderRadius: 16, overflow: "hidden", transition: "border-color .2s, box-shadow .2s",
               }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.boxShadow = "var(--glow-sm)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-primary)"; e.currentTarget.style.boxShadow = "var(--glow-sm)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = r.alreadyOffered ? "rgba(99,102,241,.3)" : "var(--border-subtle)"; e.currentTarget.style.boxShadow = "none"; }}
               >
                 {/* Top bar */}
                 <div style={{ padding: "9px 16px", borderBottom: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-elevated)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 5 }}>
-                      <SeatIcon size={12} color="#6366f1"/> {r.seats} ghế
+                      <SeatIcon size={12} color="var(--brand-primary)"/> {r.seats} ghế
                     </span>
                     <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--border-medium)" }}/>
                     <span style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 5 }}>
-                      <RulerIcon size={12} color="#a78bfa"/> {r.distanceKm.toFixed(1)} km
+                      <RulerIcon size={12} color="var(--brand-violet)"/> {r.distanceKm.toFixed(1)} km
                     </span>
                     <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--border-medium)" }}/>
                     <span style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 5 }}>
-                      <ClockIcon size={12} color="#22d3ee"/> ~{r.durationMin} phút
+                      <ClockIcon size={12} color="var(--brand-secondary)"/> ~{r.durationMin} phút
                     </span>
                   </div>
                   {r.alreadyOffered && (
-                    <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,.15)", color: "#6366f1", border: "1px solid rgba(99,102,241,.3)" }}>
+                    <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,.15)", color: "var(--brand-primary)", border: "1px solid rgba(99,102,241,.3)" }}>
                       Đã quan tâm
                     </span>
                   )}
@@ -269,16 +269,16 @@ function BrowseTab() {
                   {/* Route */}
                   <div style={{ background: "var(--bg-overlay)", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
                     <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22d3ee", marginTop: 4, flexShrink: 0 }}/>
+                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--brand-secondary)", marginTop: 4, flexShrink: 0 }}/>
                       <div>
-                        <div style={{ fontSize: 10, color: "#22d3ee", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm đón</div>
+                        <div style={{ fontSize: 10, color: "var(--brand-secondary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm đón</div>
                         <div style={{ fontSize: 12, color: "var(--text-primary)" }}>{r.pickupAddress}</div>
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: 2, background: "#f472b6", marginTop: 4, flexShrink: 0 }}/>
+                      <div style={{ width: 7, height: 7, borderRadius: 2, background: "var(--brand-pink)", marginTop: 4, flexShrink: 0 }}/>
                       <div>
-                        <div style={{ fontSize: 10, color: "#f472b6", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm trả</div>
+                        <div style={{ fontSize: 10, color: "var(--brand-pink)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm trả</div>
                         <div style={{ fontSize: 12, color: "var(--text-primary)" }}>{r.dropoffAddress}</div>
                       </div>
                     </div>
@@ -293,7 +293,7 @@ function BrowseTab() {
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: "var(--brand-emerald)" }}>
                         {Math.round(r.quotedPrice * 0.85).toLocaleString("vi-VN")}đ
                       </div>
                       <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
@@ -351,43 +351,43 @@ function OpenRequestCard({ req: r, actionId, onTake }: {
       background: "var(--bg-surface)", border: "1px solid var(--border-subtle)",
       borderRadius: 16, overflow: "hidden", transition: "border-color .2s, box-shadow .2s",
     }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.boxShadow = "var(--glow-sm)"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-primary)"; e.currentTarget.style.boxShadow = "var(--glow-sm)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-subtle)"; e.currentTarget.style.boxShadow = "none"; }}
     >
       <div style={{ padding: "9px 16px", borderBottom: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)" }}>
-        <SeatIcon size={12} color="#6366f1"/>
+        <SeatIcon size={12} color="var(--brand-primary)"/>
         <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{r.seats} ghế</span>
         <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--border-medium)" }}/>
-        <RulerIcon size={12} color="#a78bfa"/>
+        <RulerIcon size={12} color="var(--brand-violet)"/>
         <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{r.distanceKm.toFixed(1)} km</span>
         <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--border-medium)" }}/>
-        <ClockIcon size={12} color="#22d3ee"/>
+        <ClockIcon size={12} color="var(--brand-secondary)"/>
         <span style={{ fontSize: 12, color: "var(--text-muted)" }}>~{r.durationMin} phút</span>
       </div>
       <div style={{ padding: 16 }}>
         <div style={{ background: "var(--bg-overlay)", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22d3ee", marginTop: 4, flexShrink: 0 }}/>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--brand-secondary)", marginTop: 4, flexShrink: 0 }}/>
             <div>
-              <div style={{ fontSize: 10, color: "#22d3ee", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm đón</div>
+              <div style={{ fontSize: 10, color: "var(--brand-secondary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm đón</div>
               <div style={{ fontSize: 12, color: "var(--text-primary)" }}>{r.pickupAddress}</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <div style={{ width: 7, height: 7, borderRadius: 2, background: "#f472b6", marginTop: 4, flexShrink: 0 }}/>
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: "var(--brand-pink)", marginTop: 4, flexShrink: 0 }}/>
             <div>
-              <div style={{ fontSize: 10, color: "#f472b6", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm trả</div>
+              <div style={{ fontSize: 10, color: "var(--brand-pink)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm trả</div>
               <div style={{ fontSize: 12, color: "var(--text-primary)" }}>{r.dropoffAddress}</div>
             </div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 6 }}>
-            <ClockIcon size={13} color="#6366f1"/>
+            <ClockIcon size={13} color="var(--brand-primary)"/>
             {new Date(r.departureTime).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--brand-emerald)" }}>
               {Math.round(r.quotedPrice * 0.85).toLocaleString("vi-VN")}đ
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
@@ -433,15 +433,15 @@ function MatchCard({ match: m, actionId, onAccept, onReject }: {
       {/* Top bar */}
       <div style={{ padding: "10px 18px", borderBottom: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-elevated)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <SeatIcon size={13} color="#6366f1"/>
+          <SeatIcon size={13} color="var(--brand-primary)"/>
           <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{m.request.seats} ghế</span>
           <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--border-medium)" }}/>
-          <RulerIcon size={12} color="#a78bfa"/>
+          <RulerIcon size={12} color="var(--brand-violet)"/>
           <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
             {m.request.distanceKm.toFixed(1)} km{m.detourKm > 0 ? ` (+${m.detourKm.toFixed(1)} km vòng)` : ""}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "#fbbf24" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "var(--brand-amber)" }}>
           <ClockIcon size={11}/> <Countdown expiresAt={m.expiresAt}/>
         </div>
       </div>
@@ -449,17 +449,17 @@ function MatchCard({ match: m, actionId, onAccept, onReject }: {
       <div style={{ padding: 18 }}>
         <div style={{ background: "var(--bg-overlay)", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
           <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-            <MapPinIcon size={14} color="#22d3ee" style={{ flexShrink: 0, marginTop: 2 }}/>
+            <MapPinIcon size={14} color="var(--brand-secondary)" style={{ flexShrink: 0, marginTop: 2 }}/>
             <div>
-              <div style={{ fontSize: 10, color: "#22d3ee", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm đón</div>
+              <div style={{ fontSize: 10, color: "var(--brand-secondary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm đón</div>
               <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{m.request.pickupAddress}</div>
             </div>
           </div>
           <div style={{ width: 2, height: 10, background: "var(--border-medium)", margin: "0 7px" }}/>
           <div style={{ display: "flex", gap: 10 }}>
-            <MapPinIcon size={14} color="#f472b6" style={{ flexShrink: 0, marginTop: 2 }}/>
+            <MapPinIcon size={14} color="var(--brand-pink)" style={{ flexShrink: 0, marginTop: 2 }}/>
             <div>
-              <div style={{ fontSize: 10, color: "#f472b6", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm trả</div>
+              <div style={{ fontSize: 10, color: "var(--brand-pink)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .4, marginBottom: 1 }}>Điểm trả</div>
               <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{m.request.dropoffAddress}</div>
             </div>
           </div>
@@ -467,13 +467,13 @@ function MatchCard({ match: m, actionId, onAccept, onReject }: {
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <ClockIcon size={13} color="#6366f1"/>
+            <ClockIcon size={13} color="var(--brand-primary)"/>
             <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
               {new Date(m.request.departureTime).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
             </span>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#34d399", letterSpacing: -.5 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--brand-emerald)", letterSpacing: -.5 }}>
               {m.driverNet.toLocaleString("vi-VN")}đ
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>bạn nhận · tổng {m.fareShare.toLocaleString("vi-VN")}đ</div>
@@ -531,7 +531,7 @@ function ErrorBanner({ msg }: { msg: string }) {
 function Spinner() {
   return (
     <div style={{ display: "flex", justifyContent: "center", padding: 48 }}>
-      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(34,211,238,.2)", borderTopColor: "#22d3ee", animation: "spin .8s linear infinite" }}/>
+      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(34,211,238,.2)", borderTopColor: "var(--brand-secondary)", animation: "spin .8s linear infinite" }}/>
     </div>
   );
 }

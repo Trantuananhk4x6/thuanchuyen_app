@@ -27,8 +27,17 @@ interface Streak {
   bonusEarnedTotal: number;
 }
 
+interface CompletedTrip {
+  id: string;
+  seatsTotal: number;
+  seatsFilled: number;
+  completedAt: string | null;
+  createdAt: string;
+}
+
 export default function DriverBackhaulPage() {
   const [tripId, setTripId]           = useState("");
+  const [trips,  setTrips]            = useState<CompletedTrip[]>([]);
   const [opps,   setOpps]             = useState<BackhaulOpp[]>([]);
   const [streak, setStreak]           = useState<Streak | null>(null);
   const [loading, setLoading]         = useState(false);
@@ -44,8 +53,18 @@ export default function DriverBackhaulPage() {
       .catch(() => {});
   }, []);
 
+  /* ── Load completed trips (default to most recent) ────────────── */
+  useEffect(() => {
+    api.get<{ items: CompletedTrip[] }>("/driver/trips?status=COMPLETED")
+      .then((r) => {
+        setTrips(r.data.items);
+        if (r.data.items.length > 0) setTripId(r.data.items[0].id);
+      })
+      .catch(() => {});
+  }, []);
+
   const search = async () => {
-    if (!tripId.trim()) { setError("Nhập mã chuyến vừa hoàn thành"); return; }
+    if (!tripId.trim()) { setError("Chọn chuyến vừa hoàn thành"); return; }
     setLoading(true); setError(""); setSearched(false);
     try {
       const r = await api.get<{ opportunities: BackhaulOpp[] }>(
@@ -74,7 +93,7 @@ export default function DriverBackhaulPage() {
   };
 
   const scoreColor = (s: number) =>
-    s >= 0.7 ? "#34d399" : s >= 0.4 ? "#fbbf24" : "#94a3b8";
+    s >= 0.7 ? "var(--brand-emerald)" : s >= 0.4 ? "var(--brand-amber)" : "var(--text-secondary)";
 
   return (
     <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 16px" }}>
@@ -96,12 +115,12 @@ export default function DriverBackhaulPage() {
               Chuỗi chuyến liên tiếp
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-              <span style={{ fontSize: 32, fontWeight: 800, color: "#fbbf24", lineHeight: 1 }}>
+              <span style={{ fontSize: 32, fontWeight: 800, color: "var(--brand-amber)", lineHeight: 1 }}>
                 {streak.currentStreak}
               </span>
               <span style={{ color: "var(--text-muted)", fontSize: 13 }}>ngày</span>
               {streak.currentStreak > 0 && (
-                <FireIcon size={18} color="#f97316" style={{ marginLeft: 4 }}/>
+                <FireIcon size={18} color="var(--brand-amber)" style={{ marginLeft: 4 }}/>
               )}
             </div>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
@@ -111,7 +130,7 @@ export default function DriverBackhaulPage() {
           </div>
           <div style={{ textAlign: "right", flexShrink: 0 }}>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>Thưởng hôm nay</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#34d399" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--brand-emerald)" }}>
               +{Math.min(streak.currentStreak * 5000, 50000).toLocaleString("vi-VN")}đ
             </div>
           </div>
@@ -124,11 +143,11 @@ export default function DriverBackhaulPage() {
           fontSize: 22, fontWeight: 800, color: "var(--text-primary)",
           display: "flex", alignItems: "center", gap: 10, marginBottom: 6,
         }}>
-          <BackhaulIcon size={24} color="#6366f1"/>
+          <BackhaulIcon size={24} color="var(--brand-primary)"/>
           Chiều quay đầu
         </h1>
         <p style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.6 }}>
-          Nhập mã chuyến vừa hoàn thành để tìm hành khách ghép trên đường về.
+          Chọn chuyến vừa hoàn thành để tìm hành khách ghép trên đường về.
           Chiều quay đầu giúp tăng thu nhập với chi phí cận biên gần bằng 0.
         </p>
       </div>
@@ -139,21 +158,31 @@ export default function DriverBackhaulPage() {
         borderRadius: 16, padding: 20, marginBottom: 24,
       }}>
         <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: .5, display: "block", marginBottom: 8 }}>
-          Mã chuyến vừa hoàn thành
+          Chuyến vừa hoàn thành
         </label>
         <div style={{ display: "flex", gap: 10 }}>
-          <input
+          <select
             value={tripId}
             onChange={(e) => setTripId(e.target.value)}
-            placeholder="clxxxxxxxxxxxxxxxx"
+            disabled={trips.length === 0}
             style={{
               flex: 1, padding: "10px 14px",
               background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)",
               borderRadius: 10, color: "var(--text-primary)", fontSize: 13, outline: "none",
-              fontFamily: "monospace",
+              cursor: trips.length === 0 ? "not-allowed" : "pointer",
             }}
-            onKeyDown={(e) => e.key === "Enter" && search()}
-          />
+          >
+            {trips.length === 0 ? (
+              <option value="">Chưa có chuyến hoàn thành</option>
+            ) : (
+              trips.map((t) => (
+                <option key={t.id} value={t.id}>
+                  #{t.id.slice(-8)} · {t.seatsFilled}/{t.seatsTotal} ghế
+                  {t.completedAt ? ` · ${new Date(t.completedAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}` : ""}
+                </option>
+              ))
+            )}
+          </select>
           <button
             onClick={search}
             disabled={loading}
@@ -195,7 +224,7 @@ export default function DriverBackhaulPage() {
           display: "flex", alignItems: "center", gap: 10,
           padding: "12px 16px", borderRadius: 12, marginBottom: 16,
           background: "rgba(52,211,153,.1)", border: "1px solid rgba(52,211,153,.3)",
-          color: "#34d399", fontSize: 13, fontWeight: 600,
+          color: "var(--brand-emerald)", fontSize: 13, fontWeight: 600,
         }}>
           <CheckCircleIcon size={16}/> Đã nhận chuyến chiều về thành công!
         </div>
@@ -263,7 +292,7 @@ export default function DriverBackhaulPage() {
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: "var(--brand-emerald)" }}>
                         {opp.quotedPrice.toLocaleString("vi-VN")}đ
                       </div>
                       <div style={{
@@ -282,12 +311,12 @@ export default function DriverBackhaulPage() {
                     marginBottom: 12, fontSize: 12, color: "var(--text-secondary)",
                   }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
-                      <MapPinIcon size={13} color="#22d3ee" style={{ marginTop: 1, flexShrink: 0 }}/>
+                      <MapPinIcon size={13} color="var(--brand-secondary)" style={{ marginTop: 1, flexShrink: 0 }}/>
                       <span>{opp.pickupAddress}</span>
                     </div>
                     <div style={{ width: 1, height: 10, background: "var(--border-medium)", margin: "0 6px" }}/>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <MapPinIcon size={13} color="#f472b6" style={{ marginTop: 1, flexShrink: 0 }}/>
+                      <MapPinIcon size={13} color="var(--brand-pink)" style={{ marginTop: 1, flexShrink: 0 }}/>
                       <span>{opp.dropoffAddress}</span>
                     </div>
                   </div>
@@ -295,13 +324,13 @@ export default function DriverBackhaulPage() {
                   {/* Chips */}
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
                     <Chip>
-                      <SeatIcon size={11} color="#6366f1"/> {opp.seats} ghế
+                      <SeatIcon size={11} color="var(--brand-primary)"/> {opp.seats} ghế
                     </Chip>
                     <Chip>
-                      <MapPinIcon size={11} color="#22d3ee"/> {opp.distanceFromDriverKm.toFixed(1)} km tới điểm đón
+                      <MapPinIcon size={11} color="var(--brand-secondary)"/> {opp.distanceFromDriverKm.toFixed(1)} km tới điểm đón
                     </Chip>
                     <Chip>
-                      <ClockIcon size={11} color="#fbbf24"/> {new Date(opp.departureTime).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+                      <ClockIcon size={11} color="var(--brand-amber)"/> {new Date(opp.departureTime).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
                     </Chip>
                   </div>
 

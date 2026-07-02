@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../../core/services/geocoding_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../features/shared/widgets/app_map.dart';
 import '../../../../features/shared/widgets/status_badge.dart';
 import '../providers/booking_provider.dart';
 
@@ -106,6 +108,30 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             },
           ),
           const SizedBox(height: 16),
+
+          // Xem trước bản đồ khi đã chọn đủ điểm đón + trả
+          if (state.hasPickup && state.hasDropoff) ...[
+            AppMap(
+              height: 180,
+              markers: [
+                MapMarkerData(
+                  point: LatLng(state.pickupLat, state.pickupLng),
+                  color: AppColors.info,
+                  icon: Icons.trip_origin,
+                ),
+                MapMarkerData(
+                  point: LatLng(state.dropoffLat, state.dropoffLng),
+                  color: AppColors.danger,
+                  icon: Icons.location_on_rounded,
+                ),
+              ],
+              polyline: [
+                LatLng(state.pickupLat, state.pickupLng),
+                LatLng(state.dropoffLat, state.dropoffLng),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // Date/time + seats row
           Row(children: [

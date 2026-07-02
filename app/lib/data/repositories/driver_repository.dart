@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import '../api/api_client.dart';
 import '../../core/constants/api.dart';
 import '../models/driver_profile.dart';
+import '../models/kyc_status.dart';
 import '../models/match.dart';
 import '../models/trip.dart';
 import '../models/trip_stop.dart';
@@ -143,6 +145,42 @@ class DriverRepository {
 
   // ── KYC ───────────────────────────────────────────────────────────────────
 
+  /// Trạng thái hồ sơ hiện tại — trả null nếu tài xế chưa có hồ sơ (404).
+  Future<KycStatus?> getKyc() async {
+    try {
+      return await _api.get(
+        ApiConstants.driverKyc,
+        fromJson: (d) => KycStatus.fromJson(d as Map<String, dynamic>),
+      );
+    } on ApiException catch (e) {
+      if (e.isNotFound) return null;
+      rethrow;
+    }
+  }
+
+  /// Upload 1 ảnh giấy tờ (multipart) → trả về { path, url(signed) }.
+  Future<KycUploadResult> uploadKycImage({
+    required String filePath,
+    required String docType,
+  }) async {
+    final form = FormData.fromMap({
+      'type': docType,
+      'file': await MultipartFile.fromFile(
+        filePath,
+        filename: '$docType.jpg',
+      ),
+    });
+    // BaseOptions ép Content-Type: application/json nên Dio không tự gắn
+    // multipart boundary — phải set thủ công kèm boundary của FormData.
+    return _api.post(
+      '/driver/kyc/upload',
+      data: form,
+      options: Options(contentType: 'multipart/form-data; boundary=${form.boundary}'),
+      fromJson: (d) => KycUploadResult.fromJson(d as Map<String, dynamic>),
+    );
+  }
+
+  /// Nộp hồ sơ KYC kèm danh sách giấy tờ đã upload ([{type, url}]).
   Future<void> submitKyc({
     required String vehicleType,
     required String vehiclePlate,
@@ -151,6 +189,7 @@ class DriverRepository {
     required String address,
     bool    allowCargo = false,
     double? cargoCapacityKg,
+    List<Map<String, String>> documents = const [],
   }) {
     return _api.post('/driver/kyc', data: {
       'vehicleType':  vehicleType,
@@ -160,16 +199,7 @@ class DriverRepository {
       'address':      address,
       'allowCargo':   allowCargo,
       if (cargoCapacityKg != null) 'cargoCapacityKg': cargoCapacityKg,
-    });
-  }
-
-  Future<void> uploadKycDocument({
-    required String filePath,
-    required String docType,
-  }) {
-    return _api.post('/driver/kyc/documents', data: {
-      'type': docType,
-      'filePath': filePath,
+      if (documents.isNotEmpty) 'documents': documents,
     });
   }
 }

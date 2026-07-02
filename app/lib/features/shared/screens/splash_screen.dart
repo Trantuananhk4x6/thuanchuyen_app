@@ -31,17 +31,16 @@ class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-        width: 72, height: 72,
-        decoration: BoxDecoration(
-          gradient: AppColors.gradPrimary,
-          borderRadius: BorderRadius.circular(20),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Image.asset(
+          'assets/images/logo.png',
+          width: 84, height: 84, fit: BoxFit.cover,
         ),
-        child: const Icon(Icons.directions_car_rounded, color: Colors.white, size: 36),
       ),
       const SizedBox(height: 16),
       const Text(
-        'Thuận Đường',
+        'Thuận Chuyến',
         style: TextStyle(
           fontSize: 26, fontWeight: FontWeight.w800,
           color: AppColors.textPrimary, letterSpacing: -0.5,

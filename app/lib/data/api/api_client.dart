@@ -103,44 +103,49 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? queryParameters,
     T Function(dynamic)? fromJson,
-  }) async {
-    final res = await _dio.get(path, queryParameters: queryParameters);
-    return _parse(res, fromJson);
-  }
+  }) =>
+      _request(() => _dio.get(path, queryParameters: queryParameters), fromJson);
 
   Future<T> post<T>(
     String path, {
     dynamic data,
+    Options? options,
     T Function(dynamic)? fromJson,
-  }) async {
-    final res = await _dio.post(path, data: data);
-    return _parse(res, fromJson);
-  }
+  }) =>
+      _request(() => _dio.post(path, data: data, options: options), fromJson);
 
   Future<T> put<T>(
     String path, {
     dynamic data,
     T Function(dynamic)? fromJson,
-  }) async {
-    final res = await _dio.put(path, data: data);
-    return _parse(res, fromJson);
-  }
+  }) =>
+      _request(() => _dio.put(path, data: data), fromJson);
 
   Future<T> delete<T>(
     String path, {
     T Function(dynamic)? fromJson,
-  }) async {
-    final res = await _dio.delete(path);
-    return _parse(res, fromJson);
-  }
+  }) =>
+      _request(() => _dio.delete(path), fromJson);
 
   Future<T> patch<T>(
     String path, {
     dynamic data,
     T Function(dynamic)? fromJson,
-  }) async {
-    final res = await _dio.patch(path, data: data);
-    return _parse(res, fromJson);
+  }) =>
+      _request(() => _dio.patch(path, data: data), fromJson);
+
+  /// Chạy request và chuyển MỌI lỗi (kể cả mất mạng / timeout / 5xx) thành
+  /// [ApiException] để mọi provider chỉ cần `on ApiException catch` là đủ.
+  Future<T> _request<T>(
+    Future<Response> Function() run,
+    T Function(dynamic)? fromJson,
+  ) async {
+    try {
+      final res = await run();
+      return _parse(res, fromJson);
+    } on DioException catch (e) {
+      throw _mapDioError(e);
+    }
   }
 
   T _parse<T>(Response res, T Function(dynamic)? fromJson) {
@@ -151,8 +156,40 @@ class ApiClient {
         message: body['error']?['message'] ?? 'Lỗi không xác định',
       );
     }
-    final data = body['data'] ?? body;
+    final data = body is Map ? (body['data'] ?? body) : body;
     return fromJson != null ? fromJson(data) : data as T;
+  }
+
+  ApiException _mapDioError(DioException e) {
+    // Server đã trả lỗi đúng định dạng {success:false, error:{code,message}}
+    final data = e.response?.data;
+    if (data is Map && data['success'] == false && data['error'] is Map) {
+      return ApiException(
+        code: data['error']['code'] ?? 'UNKNOWN',
+        message: data['error']['message'] ?? 'Lỗi không xác định',
+      );
+    }
+    // Lỗi tầng vận chuyển (không có body chuẩn) → thông điệp tiếng Việt rõ ràng
+    return switch (e.type) {
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout =>
+        const ApiException(code: 'TIMEOUT', message: 'Máy chủ phản hồi quá chậm. Vui lòng thử lại.'),
+      DioExceptionType.connectionError =>
+        const ApiException(code: 'NETWORK', message: 'Mất kết nối mạng. Kiểm tra Internet và thử lại.'),
+      DioExceptionType.badCertificate =>
+        const ApiException(code: 'NETWORK', message: 'Lỗi chứng chỉ bảo mật của máy chủ.'),
+      DioExceptionType.cancel =>
+        const ApiException(code: 'CANCELLED', message: 'Yêu cầu đã bị huỷ.'),
+      DioExceptionType.badResponse => (e.response?.statusCode ?? 0) >= 500
+          ? const ApiException(code: 'SERVER', message: 'Máy chủ gặp sự cố. Vui lòng thử lại sau.')
+          : ApiException(
+              code: 'HTTP_${e.response?.statusCode}',
+              message: 'Yêu cầu không thành công (${e.response?.statusCode}).',
+            ),
+      DioExceptionType.unknown =>
+        const ApiException(code: 'NETWORK', message: 'Không thể kết nối máy chủ. Kiểm tra mạng và thử lại.'),
+    };
   }
 }
 
@@ -165,7 +202,9 @@ class ApiException implements Exception {
   String toString() => 'ApiException($code): $message';
 
   bool get isUnauthorized  => code == 'UNAUTHORIZED';
+  bool get isForbidden     => code == 'FORBIDDEN';
   bool get isNotFound      => code == 'NOT_FOUND';
-  bool get isRateLimit     => code == 'RATE_LIMIT';
-  bool get isValidation    => code == 'VALIDATION_ERROR';
+  bool get isRateLimit     => code == 'RATE_LIMITED';
+  bool get isValidation    => code == 'VALIDATION';
+  bool get isNetwork       => code == 'NETWORK' || code == 'TIMEOUT';
 }

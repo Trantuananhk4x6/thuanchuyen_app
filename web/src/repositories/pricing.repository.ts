@@ -7,6 +7,13 @@ export function getActivePricing() {
   return prisma.pricingConfig.findFirst({ where: { isActive: true } });
 }
 
+/** Số tiền tài xế thực nhận từ một phần cước, theo hoa hồng đang cấu hình (mặc định 15%). */
+export async function driverNetForFare(fareShare: number): Promise<number> {
+  const p = await getActivePricing();
+  const commission = p?.commissionPct ?? 0.15;
+  return Math.round(fareShare * (1 - commission));
+}
+
 export function updatePricing(id: string, data: Prisma.PricingConfigUpdateInput) {
   return prisma.pricingConfig.update({ where: { id }, data });
 }
@@ -33,6 +40,10 @@ export function createAreaPricing(data: Prisma.AreaPricingCreateInput) {
 
 export function updateAreaPricing(id: string, data: Prisma.AreaPricingUpdateInput) {
   return prisma.areaPricing.update({ where: { id }, data });
+}
+
+export function deleteAreaPricing(id: string) {
+  return prisma.areaPricing.delete({ where: { id } });
 }
 
 // ─── Cargo Config ─────────────────────────────────────────────────────────────
@@ -95,13 +106,25 @@ export function createReport(data: Prisma.ReportCreateInput) {
 
 export function listReports(params: {
   status?: string;
+  search?: string;
   page: number;
   limit: number;
 }) {
   const skip = (params.page - 1) * params.limit;
+  const where: Prisma.ReportWhereInput = {
+    ...(params.status ? { status: params.status as never } : {}),
+    ...(params.search ? {
+      OR: [
+        { reason:      { contains: params.search, mode: "insensitive" } },
+        { description: { contains: params.search, mode: "insensitive" } },
+        { reporter:     { is: { OR: [{ phone: { contains: params.search } }, { fullName: { contains: params.search, mode: "insensitive" } }] } } },
+        { reportedUser: { is: { OR: [{ phone: { contains: params.search } }, { fullName: { contains: params.search, mode: "insensitive" } }] } } },
+      ],
+    } : {}),
+  };
   return prisma.$transaction([
     prisma.report.findMany({
-      where: params.status ? { status: params.status as never } : {},
+      where,
       include: {
         reporter: { select: { fullName: true, phone: true } },
         reportedUser: { select: { fullName: true, phone: true } },
@@ -110,10 +133,19 @@ export function listReports(params: {
       take: params.limit,
       orderBy: { createdAt: "desc" },
     }),
-    prisma.report.count({
-      where: params.status ? { status: params.status as never } : {},
-    }),
+    prisma.report.count({ where }),
   ]);
+}
+
+/** Thống kê báo cáo cho admin: số lượng theo từng trạng thái. */
+export async function reportStats() {
+  const [open, investigating, resolved, dismissed] = await prisma.$transaction([
+    prisma.report.count({ where: { status: "OPEN" } }),
+    prisma.report.count({ where: { status: "INVESTIGATING" } }),
+    prisma.report.count({ where: { status: "RESOLVED" } }),
+    prisma.report.count({ where: { status: "DISMISSED" } }),
+  ]);
+  return { open, investigating, resolved, dismissed };
 }
 
 export function updateReport(

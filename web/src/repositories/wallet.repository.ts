@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import type { WalletTxType } from "@prisma/client";
+import type { WalletTxType, Prisma } from "@prisma/client";
 
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 
@@ -58,9 +58,11 @@ export async function releaseMaturedTransactions() {
           withdrawableBalance: { increment: tx.amount },
         },
       }),
+      // Giữ nguyên type TRIP_CREDIT (chỉ đánh dấu releasedAt) để lịch sử thu nhập
+      // của tài xế không bị mất — releasedAt đã đủ phân biệt pending vs đã rút được.
       prisma.walletTransaction.update({
         where: { id: tx.id },
-        data: { releasedAt: now, type: "RELEASE" },
+        data: { releasedAt: now },
       }),
     ]);
   }
@@ -84,6 +86,46 @@ export function createWithdrawal(data: {
   return prisma.withdrawalRequest.create({ data });
 }
 
+/**
+ * Trừ số dư + tạo giao dịch + tạo yêu cầu rút — tất cả trong MỘT transaction,
+ * với điều kiện số dư đủ (updateMany + gte) để chống double-spend khi gọi đồng thời.
+ * Trả về yêu cầu rút, hoặc null nếu số dư không đủ.
+ */
+export function createWithdrawalAtomic(params: {
+  walletId: string;
+  driverProfileId: string;
+  amount: number;
+  bankName: string;
+  bankAccountNo: string;
+  bankAccountName: string;
+}) {
+  return prisma.$transaction(async (tx) => {
+    const res = await tx.driverWallet.updateMany({
+      where: { id: params.walletId, withdrawableBalance: { gte: params.amount } },
+      data: { withdrawableBalance: { decrement: params.amount } },
+    });
+    if (res.count !== 1) return null; // số dư không đủ hoặc bị thay đổi đồng thời
+
+    await tx.walletTransaction.create({
+      data: {
+        walletId: params.walletId,
+        amount: -params.amount,
+        type: "WITHDRAWAL",
+        description: "Yêu cầu rút tiền",
+      },
+    });
+    return tx.withdrawalRequest.create({
+      data: {
+        driverProfileId: params.driverProfileId,
+        amount: params.amount,
+        bankName: params.bankName,
+        bankAccountNo: params.bankAccountNo,
+        bankAccountName: params.bankAccountName,
+      },
+    });
+  });
+}
+
 export function findWithdrawalById(id: string) {
   return prisma.withdrawalRequest.findUnique({ where: { id }, include: { driverProfile: { include: { user: true } } } });
 }
@@ -91,28 +133,49 @@ export function findWithdrawalById(id: string) {
 export function listWithdrawals(params: {
   driverProfileId?: string;
   status?: string;
+  search?: string;
   page: number;
   limit: number;
 }) {
   const skip = (params.page - 1) * params.limit;
+  const where: Prisma.WithdrawalRequestWhereInput = {
+    ...(params.driverProfileId ? { driverProfileId: params.driverProfileId } : {}),
+    ...(params.status ? { status: params.status as never } : {}),
+    ...(params.search ? {
+      OR: [
+        { bankName:        { contains: params.search, mode: "insensitive" } },
+        { bankAccountName: { contains: params.search, mode: "insensitive" } },
+        { bankAccountNo:   { contains: params.search } },
+        { driverProfile: { user: { OR: [
+          { phone:    { contains: params.search } },
+          { fullName: { contains: params.search, mode: "insensitive" } },
+        ] } } },
+      ],
+    } : {}),
+  };
   return prisma.$transaction([
     prisma.withdrawalRequest.findMany({
-      where: {
-        ...(params.driverProfileId ? { driverProfileId: params.driverProfileId } : {}),
-        ...(params.status ? { status: params.status as never } : {}),
-      },
+      where,
       include: { driverProfile: { include: { user: true } } },
       skip,
       take: params.limit,
       orderBy: { createdAt: "desc" },
     }),
-    prisma.withdrawalRequest.count({
-      where: {
-        ...(params.driverProfileId ? { driverProfileId: params.driverProfileId } : {}),
-        ...(params.status ? { status: params.status as never } : {}),
-      },
-    }),
+    prisma.withdrawalRequest.count({ where }),
   ]);
+}
+
+/** Thống kê rút tiền cho admin: số lượng theo trạng thái + tổng tiền đang chờ duyệt. */
+export async function withdrawalStats() {
+  const [pending, approved, processing, rejected, done, pendingAgg] = await prisma.$transaction([
+    prisma.withdrawalRequest.count({ where: { status: "PENDING" } }),
+    prisma.withdrawalRequest.count({ where: { status: "APPROVED" } }),
+    prisma.withdrawalRequest.count({ where: { status: "PROCESSING" } }),
+    prisma.withdrawalRequest.count({ where: { status: "REJECTED" } }),
+    prisma.withdrawalRequest.count({ where: { status: "DONE" } }),
+    prisma.withdrawalRequest.aggregate({ _sum: { amount: true }, where: { status: "PENDING" } }),
+  ]);
+  return { pending, approved, processing, rejected, done, pendingAmount: pendingAgg._sum.amount ?? 0 };
 }
 
 export function updateWithdrawal(

@@ -23,13 +23,19 @@ export async function POST(req: NextRequest) {
   const isPassenger = passengers.some((p) => p.customerId === auth.payload.userId);
   if (!isPassenger) return Errors.forbidden();
 
-  const rating = await createRating({
-    tripId: parsed.data.tripId,
-    giverId: auth.payload.userId,
-    receiverId: trip.driverProfile.userId,
-    stars: parsed.data.stars,
-    comment: parsed.data.comment,
-  });
+  let rating;
+  try {
+    rating = await createRating({
+      tripId: parsed.data.tripId,
+      giverId: auth.payload.userId,
+      receiverId: trip.driverProfile.userId,
+      stars: parsed.data.stars,
+      comment: parsed.data.comment,
+    });
+  } catch (e) {
+    if ((e as { code?: string }).code === "P2002") return Errors.conflict("Bạn đã đánh giá chuyến này");
+    throw e;
+  }
 
   const { avg } = await recalcDriverRating(trip.driverProfile.userId);
   const driver = await findDriverByUserId(trip.driverProfile.userId);

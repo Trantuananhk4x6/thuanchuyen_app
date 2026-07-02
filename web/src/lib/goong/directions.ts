@@ -1,4 +1,4 @@
-const GOONG_BASE = "https://rsapi.goong.io";
+const GOONG_BASE = process.env.GOONG_API_BASE_URL ?? "https://rsapi.goong.io";
 
 export interface GoongRoute {
   distanceKm: number;

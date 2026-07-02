@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/top_nav_bar.dart';
 
 class CustomerHomeScreen extends StatelessWidget {
   const CustomerHomeScreen({super.key, required this.navigationShell});
   final StatefulNavigationShell navigationShell;
 
   static const _tabs = [
-    NavigationDestination(
-      icon: Icon(Icons.search_rounded),
-      selectedIcon: Icon(Icons.search_rounded),
+    TopNavItem(
+      icon: Icons.search_rounded,
+      selectedIcon: Icons.search_rounded,
       label: 'Đặt chuyến',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.directions_car_outlined),
-      selectedIcon: Icon(Icons.directions_car_rounded),
+    TopNavItem(
+      icon: Icons.directions_car_outlined,
+      selectedIcon: Icons.directions_car_rounded,
       label: 'Chuyến đi',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.person_outline_rounded),
-      selectedIcon: Icon(Icons.person_rounded),
+    TopNavItem(
+      icon: Icons.person_outline_rounded,
+      selectedIcon: Icons.person_rounded,
       label: 'Cá nhân',
     ),
   ];
@@ -27,19 +28,27 @@ class CustomerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (i) => navigationShell.goBranch(
-          i,
-          initialLocation: i == navigationShell.currentIndex,
-        ),
-        destinations: _tabs,
-        backgroundColor: AppColors.bgSurface,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.15),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        height: 68,
-        surfaceTintColor: Colors.transparent,
+      backgroundColor: AppColors.bgDark,
+      body: Column(
+        children: [
+          // Điều hướng ở TRÊN (thay cho bottom nav)
+          TopNavBar(
+            items: _tabs,
+            currentIndex: navigationShell.currentIndex,
+            onSelect: (i) => navigationShell.goBranch(
+              i,
+              initialLocation: i == navigationShell.currentIndex,
+            ),
+          ),
+          // Bỏ inset top thừa để AppBar màn con không bị đẩy xuống
+          Expanded(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: navigationShell,
+            ),
+          ),
+        ],
       ),
     );
   }

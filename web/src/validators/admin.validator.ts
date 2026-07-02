@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VoucherConditionsSchema } from "@/lib/vouchers/conditions";
 
 export const RejectKycSchema = z.object({
   reason: z.string().min(10).max(500),
@@ -70,31 +71,49 @@ export const ListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   status: z.string().optional(),
+  role: z.string().optional(),
+  search: z.string().trim().max(100).optional(),
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
 });
 
-export const CreateVoucherSchema = z.object({
-  code: z.string().min(3).max(20).toUpperCase(),
-  name: z.string().min(3).max(100),
-  description: z.string().max(500).optional(),
-  type: z.enum(["PERCENT", "FIXED_AMOUNT", "FREE_TRIP"]),
-  value: z.number().min(0),
-  minOrderValue: z.number().int().min(0).default(0),
-  maxDiscount: z.number().int().min(0).optional(),
-  usageLimit: z.number().int().min(1).optional(),
-  userLimit: z.number().int().min(1).default(1),
-  startsAt: z.string().datetime(),
-  expiresAt: z.string().datetime(),
-  targetRole: z.enum(["CUSTOMER", "DRIVER"]).optional(),
-});
+export const CreateVoucherSchema = z
+  .object({
+    code: z.string().min(3).max(20).toUpperCase(),
+    name: z.string().min(3).max(100),
+    description: z.string().max(500).optional(),
+    type: z.enum(["PERCENT", "FIXED_AMOUNT", "FREE_TRIP"]),
+    value: z.number().min(0),
+    minOrderValue: z.number().int().min(0).default(0),
+    maxDiscount: z.number().int().min(0).optional(),
+    usageLimit: z.number().int().min(1).optional(),
+    userLimit: z.number().int().min(1).default(1),
+    startsAt: z.string().datetime(),
+    expiresAt: z.string().datetime(),
+    targetRole: z.enum(["CUSTOMER", "DRIVER"]).optional(),
+    conditions: VoucherConditionsSchema.optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.type === "PERCENT" && (v.value <= 0 || v.value > 100)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Phần trăm giảm phải nằm trong khoảng 1–100", path: ["value"] });
+    }
+    if (v.type !== "FREE_TRIP" && v.value <= 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Giá trị giảm phải lớn hơn 0", path: ["value"] });
+    }
+  });
 
 export const UpdateVoucherSchema = z.object({
   name: z.string().min(3).max(100).optional(),
   description: z.string().max(500).optional(),
   status: z.enum(["ACTIVE", "PAUSED"]).optional(),
-  usageLimit: z.number().int().min(1).optional(),
+  value: z.number().min(0).optional(),
+  minOrderValue: z.number().int().min(0).optional(),
+  maxDiscount: z.number().int().min(0).optional().nullable(),
+  usageLimit: z.number().int().min(1).optional().nullable(),
+  userLimit: z.number().int().min(1).optional(),
+  targetRole: z.enum(["CUSTOMER", "DRIVER"]).optional().nullable(),
   expiresAt: z.string().datetime().optional(),
+  conditions: VoucherConditionsSchema.optional(),
 });
 
 export const CreateBannerSchema = z.object({

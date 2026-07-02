@@ -32,11 +32,11 @@ interface TripRequest {
 }
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  PENDING:   { label: "Chờ ghép tài xế", color: "#fbbf24", bg: "rgba(251,191,36,.1)",  border: "rgba(251,191,36,.3)"  },
-  MATCHED:   { label: "Đã ghép",          color: "#22d3ee", bg: "rgba(34,211,238,.1)",  border: "rgba(34,211,238,.3)"  },
-  COMPLETED: { label: "Hoàn thành",       color: "#34d399", bg: "rgba(52,211,153,.1)",  border: "rgba(52,211,153,.3)"  },
-  CANCELLED: { label: "Đã hủy",           color: "#94a3b8", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.3)" },
-  EXPIRED:   { label: "Hết hạn",          color: "#f87171", bg: "rgba(248,113,113,.1)", border: "rgba(248,113,113,.3)" },
+  PENDING:   { label: "Chờ ghép tài xế", color: "var(--brand-amber)", bg: "rgba(251,191,36,.1)",  border: "rgba(251,191,36,.3)"  },
+  MATCHED:   { label: "Đã ghép",          color: "var(--brand-secondary)", bg: "rgba(34,211,238,.1)",  border: "rgba(34,211,238,.3)"  },
+  COMPLETED: { label: "Hoàn thành",       color: "var(--brand-emerald)", bg: "rgba(52,211,153,.1)",  border: "rgba(52,211,153,.3)"  },
+  CANCELLED: { label: "Đã hủy",           color: "var(--text-secondary)", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.3)" },
+  EXPIRED:   { label: "Hết hạn",          color: "var(--danger)", bg: "rgba(248,113,113,.1)", border: "rgba(248,113,113,.3)" },
 };
 
 export default function TripRequestDetailPage({ params }: { params: { id: string } }) {
@@ -73,7 +73,7 @@ export default function TripRequestDetailPage({ params }: { params: { id: string
 
   if (loading) return (
     <div style={{ maxWidth:720, margin:"60px auto", textAlign:"center", color:"var(--text-muted)" }}>
-      <div style={{ width:40, height:40, border:"4px solid rgba(99,102,241,.2)", borderTopColor:"#6366f1",
+      <div style={{ width:40, height:40, border:"4px solid rgba(99,102,241,.2)", borderTopColor:"var(--brand-primary)",
         borderRadius:"50%", animation:"spin .8s linear infinite", margin:"0 auto 16px" }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       Đang tải...
@@ -137,17 +137,17 @@ export default function TripRequestDetailPage({ params }: { params: { id: string
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
-            <div style={{ width:10, height:10, borderRadius:"50%", background:"#22d3ee", marginTop:3, flexShrink:0, boxShadow:"0 0 6px #22d3ee" }}/>
+            <div style={{ width:10, height:10, borderRadius:"50%", background:"var(--brand-secondary)", marginTop:3, flexShrink:0, boxShadow:"0 0 6px var(--brand-secondary)" }}/>
             <div>
-              <div style={{ fontSize:11, color:"#22d3ee", fontWeight:700, marginBottom:2 }}>ĐIỂM ĐÓN</div>
+              <div style={{ fontSize:11, color:"var(--brand-secondary)", fontWeight:700, marginBottom:2 }}>ĐIỂM ĐÓN</div>
               <div style={{ fontSize:14, color:"var(--text-primary)", fontWeight:500 }}>{request.pickupAddress}</div>
             </div>
           </div>
           <div style={{ marginLeft:4, width:2, height:20, background:"var(--border-subtle)" }}/>
           <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
-            <MapPinIcon size={10} color="#f472b6" style={{ marginTop:3, flexShrink:0 }}/>
+            <MapPinIcon size={10} color="var(--brand-pink)" style={{ marginTop:3, flexShrink:0 }}/>
             <div>
-              <div style={{ fontSize:11, color:"#f472b6", fontWeight:700, marginBottom:2 }}>ĐIỂM TRẢ</div>
+              <div style={{ fontSize:11, color:"var(--brand-pink)", fontWeight:700, marginBottom:2 }}>ĐIỂM TRẢ</div>
               <div style={{ fontSize:14, color:"var(--text-primary)", fontWeight:500 }}>{request.dropoffAddress}</div>
             </div>
           </div>
@@ -159,20 +159,20 @@ export default function TripRequestDetailPage({ params }: { params: { id: string
         <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border-subtle)", borderRadius:12, padding:16 }}>
           <div style={{ fontSize:11, color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:.5, marginBottom:6 }}>Giờ khởi hành</div>
           <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", display:"flex", alignItems:"center", gap:6 }}>
-            <ClockIcon size={13} color="#6366f1"/>
+            <ClockIcon size={13} color="var(--brand-primary)"/>
             {new Date(request.departureTime).toLocaleString("vi-VN", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit", year:"numeric" })}
           </div>
         </div>
         <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border-subtle)", borderRadius:12, padding:16 }}>
           <div style={{ fontSize:11, color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:.5, marginBottom:6 }}>Số chỗ</div>
           <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", display:"flex", alignItems:"center", gap:6 }}>
-            <UsersIcon size={13} color="#6366f1"/>
+            <UsersIcon size={13} color="var(--brand-primary)"/>
             {request.seats} chỗ
           </div>
         </div>
         <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border-subtle)", borderRadius:12, padding:16 }}>
           <div style={{ fontSize:11, color:"var(--text-muted)", textTransform:"uppercase", letterSpacing:.5, marginBottom:6 }}>Giá dự tính</div>
-          <div style={{ fontSize:16, fontWeight:700, color:"#34d399" }}>
+          <div style={{ fontSize:16, fontWeight:700, color:"var(--brand-emerald)" }}>
             {request.quotedPrice.toLocaleString("vi-VN")}đ
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function TripRequestDetailPage({ params }: { params: { id: string
       {request.status === "PENDING" && (
         <div style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", borderRadius:14,
           background:"rgba(99,102,241,.08)", border:"1px solid rgba(99,102,241,.25)" }}>
-          <div style={{ width:8, height:8, borderRadius:"50%", background:"#fbbf24",
+          <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--brand-amber)",
             animation:"pulse2 1.5s infinite", flexShrink:0 }}/>
           <div style={{ fontSize:13, color:"var(--text-secondary)" }}>
             Hệ thống đang tìm tài xế phù hợp với lộ trình của bạn. Bạn sẽ nhận được thông báo khi có tài xế nhận chuyến.

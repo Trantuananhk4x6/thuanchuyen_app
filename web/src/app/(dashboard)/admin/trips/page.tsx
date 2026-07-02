@@ -89,7 +89,7 @@ function PassengerPanel({ passengers }: { passengers: Passenger[] }) {
             {/* order badge */}
             <div style={{
               width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(99,102,241,.15)", color: "#a78bfa", fontSize: 11, fontWeight: 700, flexShrink: 0,
+              background: "rgba(99,102,241,.15)", color: "var(--brand-violet)", fontSize: 11, fontWeight: 700, flexShrink: 0,
             }}>{idx + 1}</div>
 
             {/* Name + phone */}
@@ -241,7 +241,7 @@ export default function AdminTripsPage() {
                 padding:"5px 14px", borderRadius:99, fontSize:12, fontWeight:600, cursor:"pointer",
                 background: active ? (col?.bg ?? "rgba(99,102,241,.15)") : "transparent",
                 border: `1px solid ${active ? (col?.border ?? "rgba(99,102,241,.35)") : "var(--border-subtle)"}`,
-                color: active ? (col?.color ?? "#a78bfa") : "var(--text-muted)",
+                color: active ? (col?.color ?? "var(--brand-violet)") : "var(--text-muted)",
                 transition:"all .15s",
               }}
             >
@@ -260,7 +260,7 @@ export default function AdminTripsPage() {
           <MergeIcon size={16} color="#fbbf24"/>
           <div style={{ flex:1, fontSize:13, color:"var(--text-secondary)" }}>
             Tài xế <strong style={{ color:"var(--text-primary)" }}>{trips[0].driverProfile.user.fullName ?? trips[0].driverProfile.vehiclePlate}</strong>{" "}
-            có <strong style={{ color:"#fbbf24" }}>{trips.length} chuyến PENDING</strong> — có thể gộp lại thành 1 chuyến
+            có <strong style={{ color:"var(--brand-amber)" }}>{trips.length} chuyến PENDING</strong> — có thể gộp lại thành 1 chuyến
           </div>
           <button
             disabled={merging}
@@ -268,7 +268,7 @@ export default function AdminTripsPage() {
             style={{
               display:"flex", alignItems:"center", gap:6, padding:"7px 14px",
               background:"rgba(251,191,36,.15)", border:"1px solid rgba(251,191,36,.4)",
-              borderRadius:8, color:"#fbbf24", fontWeight:700, fontSize:12, cursor:"pointer",
+              borderRadius:8, color:"var(--brand-amber)", fontWeight:700, fontSize:12, cursor:"pointer",
               opacity: merging ? .6 : 1, whiteSpace:"nowrap",
             }}>
             <MergeIcon size={12}/> {merging ? "Đang gộp..." : "Gộp chuyến"}
@@ -285,7 +285,7 @@ export default function AdminTripsPage() {
       )}
       {success && (
         <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderRadius:10, marginBottom:16,
-          background:"rgba(52,211,153,.1)", border:"1px solid rgba(52,211,153,.3)", color:"#34d399", fontSize:13 }}>
+          background:"rgba(52,211,153,.1)", border:"1px solid rgba(52,211,153,.3)", color:"var(--brand-emerald)", fontSize:13 }}>
           <CheckCircleIcon size={13}/> {success}
         </div>
       )}
@@ -359,7 +359,7 @@ export default function AdminTripsPage() {
             {loading ? (
               <tbody>
                 <tr><td colSpan={8} style={{ textAlign:"center", padding:40 }}>
-                  <div style={{ width:28, height:28, border:"3px solid rgba(167,139,250,.2)", borderTopColor:"#a78bfa",
+                  <div style={{ width:28, height:28, border:"3px solid rgba(167,139,250,.2)", borderTopColor:"var(--brand-violet)",
                     borderRadius:"50%", animation:"spin .8s linear infinite", margin:"0 auto" }}/>
                 </td></tr>
               </tbody>
@@ -402,7 +402,7 @@ export default function AdminTripsPage() {
                           {t.seatsFilled}
                         </span>/{t.seatsTotal}
                         {t.passengers.length > 0 && (
-                          <span style={{ marginLeft:6, fontSize:10, color:"#a78bfa", fontWeight:600 }}>
+                          <span style={{ marginLeft:6, fontSize:10, color:"var(--brand-violet)", fontWeight:600 }}>
                             ({t.passengers.length} KH)
                           </span>
                         )}
@@ -428,7 +428,7 @@ export default function AdminTripsPage() {
                         {t.status === "COMPLETED" && (
                           <button onClick={() => { setRefund({ tripId: t.id, amount: "", reason: "" }); setRefundErr(""); }}
                             style={{ padding:"5px 12px", background:"rgba(52,211,153,.1)", border:"1px solid rgba(52,211,153,.3)",
-                              borderRadius:8, color:"#34d399", fontWeight:600, fontSize:11, cursor:"pointer",
+                              borderRadius:8, color:"var(--brand-emerald)", fontWeight:600, fontSize:11, cursor:"pointer",
                               display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                             <WalletIcon size={11}/> Hoàn tiền
                           </button>
@@ -444,7 +444,7 @@ export default function AdminTripsPage() {
                           borderBottom: "1px solid var(--border-subtle)",
                           padding: 0,
                         }}>
-                          <div style={{ borderLeft: "3px solid #a78bfa", margin: "0 0 0 16px" }}>
+                          <div style={{ borderLeft: "3px solid var(--brand-violet)", margin: "0 0 0 16px" }}>
                             <PassengerPanel passengers={t.passengers} />
                           </div>
                         </td>

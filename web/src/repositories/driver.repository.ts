@@ -41,6 +41,23 @@ export function addKycDocument(data: {
   });
 }
 
+/** Thay toàn bộ giấy tờ của hồ sơ bằng bộ mới (atomic) — dùng khi nộp lại hồ sơ. */
+export function replaceKycDocuments(
+  driverProfileId: string,
+  docs: Array<{ type: string; url: string }>,
+) {
+  return prisma.$transaction([
+    prisma.kycDocument.deleteMany({ where: { driverProfileId } }),
+    prisma.kycDocument.createMany({
+      data: docs.map((d) => ({
+        driverProfileId,
+        type: d.type as DocumentType,
+        url: d.url,
+      })),
+    }),
+  ]);
+}
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export function createRoute(data: Prisma.DriverRouteCreateInput) {
@@ -67,23 +84,41 @@ export function updateRoute(id: string, data: Prisma.DriverRouteUpdateInput) {
 
 // ─── Admin list ───────────────────────────────────────────────────────────────
 
-export function listDrivers(params: {
+export async function listDrivers(params: {
   page: number;
   limit: number;
   status?: VerificationStatus;
+  search?: string;
 }) {
   const skip = (params.page - 1) * params.limit;
   const where: Prisma.DriverProfileWhereInput = {};
   if (params.status) where.verificationStatus = params.status;
+  if (params.search) {
+    where.OR = [
+      { user: { fullName: { contains: params.search, mode: "insensitive" } } },
+      { user: { phone: { contains: params.search } } },
+      { vehiclePlate: { contains: params.search, mode: "insensitive" } },
+    ];
+  }
 
-  return prisma.$transaction([
-    prisma.driverProfile.findMany({
-      where,
-      include: { user: true, documents: true },
-      skip,
-      take: params.limit,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.driverProfile.count({ where }),
-  ]);
+  const [items, total, grandTotal, pending, approved, rejected, online] =
+    await prisma.$transaction([
+      prisma.driverProfile.findMany({
+        where,
+        include: { user: true, documents: true },
+        skip,
+        take: params.limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.driverProfile.count({ where }),
+      prisma.driverProfile.count(),
+      prisma.driverProfile.count({ where: { verificationStatus: "PENDING" } }),
+      prisma.driverProfile.count({ where: { verificationStatus: "APPROVED" } }),
+      prisma.driverProfile.count({ where: { verificationStatus: "REJECTED" } }),
+      prisma.driverProfile.count({ where: { isOnline: true } }),
+    ]);
+
+  const stats = { total: grandTotal, pending, approved, rejected, online };
+
+  return { items, total, stats };
 }

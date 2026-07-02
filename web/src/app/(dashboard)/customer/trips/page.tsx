@@ -23,7 +23,7 @@ interface TripItem {
       user: { fullName: string | null; phone: string };
     };
   }>;
-  tripPassenger: { tripId: string } | null;
+  tripPassenger: { tripId: string; legStatus?: string; trip: { status: string } | null } | null;
 }
 
 interface CargoItem {
@@ -60,21 +60,23 @@ interface ActivityItem {
 /* ── Status config ───────────────────────────────────────────────── */
 
 const TRIP_STATUS: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  PENDING:   { label: "Chờ ghép",     color: "#fbbf24", bg: "rgba(251,191,36,.1)",  border: "rgba(251,191,36,.25)"  },
-  MATCHED:   { label: "Đã ghép",      color: "#22d3ee", bg: "rgba(34,211,238,.1)",  border: "rgba(34,211,238,.25)"  },
-  CANCELLED: { label: "Đã huỷ",       color: "#94a3b8", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.25)" },
-  EXPIRED:   { label: "Hết hạn",      color: "#f87171", bg: "rgba(248,113,113,.1)", border: "rgba(248,113,113,.25)" },
+  PENDING:   { label: "Chờ ghép",     color: "var(--brand-amber)", bg: "rgba(251,191,36,.1)",  border: "rgba(251,191,36,.25)"  },
+  MATCHED:   { label: "Đã ghép",      color: "var(--brand-secondary)", bg: "rgba(34,211,238,.1)",  border: "rgba(34,211,238,.25)"  },
+  ONGOING:   { label: "Đang chạy",    color: "var(--brand-violet)", bg: "rgba(99,102,241,.1)",  border: "rgba(99,102,241,.25)"  },
+  COMPLETED: { label: "Hoàn thành",   color: "var(--brand-emerald)", bg: "rgba(52,211,153,.1)",  border: "rgba(52,211,153,.25)"  },
+  CANCELLED: { label: "Đã huỷ",       color: "var(--text-secondary)", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.25)" },
+  EXPIRED:   { label: "Hết hạn",      color: "var(--danger)", bg: "rgba(248,113,113,.1)", border: "rgba(248,113,113,.25)" },
 };
 
 const CARGO_STATUS: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  PENDING:   { label: "Đang chờ",      color: "#fbbf24", bg: "rgba(251,191,36,.1)",  border: "rgba(251,191,36,.25)"  },
-  MATCHED:   { label: "Đã ghép xe",    color: "#6366f1", bg: "rgba(99,102,241,.1)",  border: "rgba(99,102,241,.25)"  },
-  PICKED_UP: { label: "Đang vận chuyển",color: "#22d3ee", bg: "rgba(34,211,238,.1)",  border: "rgba(34,211,238,.25)"  },
-  DELIVERED: { label: "Đã giao",       color: "#34d399", bg: "rgba(52,211,153,.1)",  border: "rgba(52,211,153,.25)"  },
-  CANCELLED: { label: "Đã huỷ",        color: "#94a3b8", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.25)" },
+  PENDING:   { label: "Đang chờ",      color: "var(--brand-amber)", bg: "rgba(251,191,36,.1)",  border: "rgba(251,191,36,.25)"  },
+  MATCHED:   { label: "Đã ghép xe",    color: "var(--brand-primary)", bg: "rgba(99,102,241,.1)",  border: "rgba(99,102,241,.25)"  },
+  PICKED_UP: { label: "Đang vận chuyển",color: "var(--brand-secondary)", bg: "rgba(34,211,238,.1)",  border: "rgba(34,211,238,.25)"  },
+  DELIVERED: { label: "Đã giao",       color: "var(--brand-emerald)", bg: "rgba(52,211,153,.1)",  border: "rgba(52,211,153,.25)"  },
+  CANCELLED: { label: "Đã huỷ",        color: "var(--text-secondary)", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.25)" },
 };
 
-const FALLBACK_STATUS = { label: "—", color: "#94a3b8", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.25)" };
+const FALLBACK_STATUS = { label: "—", color: "var(--text-secondary)", bg: "rgba(148,163,184,.1)", border: "rgba(148,163,184,.25)" };
 
 type KindFilter   = "all" | "trip" | "cargo";
 type StatusFilter = "all" | "active" | "done" | "cancelled";
@@ -91,8 +93,8 @@ const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: "cancelled", label: "Đã huỷ / Hết hạn" },
 ];
 
-const ACTIVE_STATUSES  = new Set(["PENDING", "MATCHED", "PICKED_UP"]);
-const DONE_STATUSES    = new Set(["DELIVERED"]);
+const ACTIVE_STATUSES  = new Set(["PENDING", "MATCHED", "ONGOING", "PICKED_UP"]);
+const DONE_STATUSES    = new Set(["COMPLETED", "DELIVERED"]);
 const CANCEL_STATUSES  = new Set(["CANCELLED", "EXPIRED"]);
 
 /* ── Component ───────────────────────────────────────────────────── */
@@ -115,7 +117,10 @@ export default function CustomerActivityPage() {
       const tripItems: ActivityItem[] = tripsRes.data.items.map((t) => ({
         kind: "trip",
         id: t.id,
-        status: t.status,
+        // TripRequest.status không có COMPLETED → lấy từ trạng thái Trip khi đã xong/đang chạy.
+        status: t.tripPassenger?.trip?.status === "COMPLETED" ? "COMPLETED"
+          : t.tripPassenger?.trip?.status === "ONGOING" ? "ONGOING"
+          : t.status,
         createdAt: t.createdAt,
         pickup:  t.pickupAddress ?? "",
         dropoff: t.dropoffAddress ?? "",
@@ -228,7 +233,7 @@ export default function CustomerActivityPage() {
                 ? (key === "trip" ? "rgba(99,102,241,.4)" : key === "cargo" ? "rgba(34,211,238,.4)" : "rgba(99,102,241,.3)")
                 : "var(--border-subtle)"}`,
               color: kindF === key
-                ? (key === "trip" ? "#818cf8" : key === "cargo" ? "#22d3ee" : "var(--brand-primary)")
+                ? (key === "trip" ? "var(--brand-violet)" : key === "cargo" ? "var(--brand-secondary)" : "var(--brand-primary)")
                 : "var(--text-muted)",
               display: "flex", alignItems: "center", gap: 5,
               transition: "all .15s",
@@ -279,7 +284,7 @@ export default function CustomerActivityPage() {
       {/* ── Content ──────────────────────────────────────────────── */}
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: 56 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", animation: "spin .8s linear infinite" }}/>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", animation: "spin .8s linear infinite" }}/>
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState kindF={kindF}/>
@@ -334,8 +339,8 @@ function ActivityCard({ item }: { item: ActivityItem }) {
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {isCargo
-            ? <PackageIcon size={20} color="#22d3ee"/>
-            : <CarIcon    size={20} color="#818cf8"/>}
+            ? <PackageIcon size={20} color="var(--brand-secondary)"/>
+            : <CarIcon    size={20} color="var(--brand-violet)"/>}
         </div>
 
         {/* Body */}
@@ -346,7 +351,7 @@ function ActivityCard({ item }: { item: ActivityItem }) {
             <span style={{
               padding: "2px 8px", borderRadius: 99, fontSize: 10, fontWeight: 700,
               background: isCargo ? "rgba(34,211,238,.12)" : "rgba(99,102,241,.12)",
-              color: isCargo ? "#22d3ee" : "#818cf8",
+              color: isCargo ? "var(--brand-secondary)" : "var(--brand-violet)",
               border: `1px solid ${isCargo ? "rgba(34,211,238,.25)" : "rgba(99,102,241,.25)"}`,
               textTransform: "uppercase", letterSpacing: 0.5,
               display: "flex", alignItems: "center", gap: 4,
@@ -371,9 +376,9 @@ function ActivityCard({ item }: { item: ActivityItem }) {
 
           {/* Route */}
           <div style={{ marginBottom: 6 }}>
-            <RouteRow color="#22d3ee" text={item.pickup}/>
+            <RouteRow color="var(--brand-secondary)" text={item.pickup}/>
             <div style={{ marginLeft: 6, width: 1, height: 8, background: "var(--border-medium)", marginBottom: 2, marginTop: 2 }}/>
-            <RouteRow color="#f472b6" text={item.dropoff}/>
+            <RouteRow color="var(--brand-pink)" text={item.dropoff}/>
           </div>
 
           {/* Meta row */}
@@ -406,7 +411,7 @@ function ActivityCard({ item }: { item: ActivityItem }) {
             {item.price > 0 && (
               <span style={{
                 marginLeft: "auto", fontWeight: 800, fontSize: 14,
-                color: isCargo ? "#22d3ee" : "#34d399",
+                color: isCargo ? "var(--brand-secondary)" : "var(--brand-emerald)",
               }}>
                 {item.price.toLocaleString("vi-VN")}đ
               </span>

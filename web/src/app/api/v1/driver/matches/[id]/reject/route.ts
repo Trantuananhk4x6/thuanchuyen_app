@@ -17,6 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const match = await findMatchById(params.id);
   if (!match) return Errors.notFound();
   if (match.driverProfileId !== driver.id) return Errors.forbidden();
+  if (match.status !== "OFFERED") return Errors.validation("Chỉ có thể từ chối lời mời chưa xử lý");
 
   await updateMatchStatus(params.id, "REJECTED");
   return ok({ rejected: true });

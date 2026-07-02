@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -729,6 +730,8 @@ model Voucher {
   expiresAt     DateTime
   status        VoucherStatus @default(ACTIVE)
   targetRole    UserRole?
+  // Bộ điều kiện nâng cao (đối tượng, phạm vi, giới hạn, ngân sách…) — xem src/lib/vouchers/conditions.ts
+  conditions    Json          @default("{}")
   createdBy     String
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -745,6 +748,7 @@ model VoucherUsage {
   voucherId String
   userId    String
   tripId    String?
+  requestId String?  @unique // liên kết yêu cầu chuyến để hoàn lượt khi hủy + chống ghi trùng
   discount  Int
   usedAt    DateTime @default(now())
 
@@ -852,6 +856,9 @@ model IpBlock {
 model LandingConfig {
   id String @id @default(cuid())
   key String @unique @default("main")
+
+  // Theme / design tokens (colors, gradient, radius) — see types/landing.ts ThemeConfig
+  theme Json @default("{}")
 
   // Navbar
   navBrand String @default("Thuận Chuyến")

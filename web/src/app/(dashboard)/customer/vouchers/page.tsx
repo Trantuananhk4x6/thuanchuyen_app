@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api/client";
 import { TicketIcon, ClockIcon, CheckCircleIcon, XIcon, GiftIcon } from "@/components/ui/Icons";
+import { summarizeConditions } from "@/lib/vouchers/conditions";
 
 type VoucherType = "PERCENT" | "FIXED_AMOUNT" | "FREE_TRIP";
 type VoucherStatus = "ACTIVE" | "PAUSED" | "EXPIRED" | "EXHAUSTED";
@@ -11,6 +12,7 @@ interface Voucher {
   type: VoucherType; value: number; minOrderValue: number; maxDiscount?: number;
   usageLimit?: number; usedCount: number; userLimit: number;
   startsAt: string; expiresAt: string; status: VoucherStatus;
+  conditions?: Record<string, unknown>;
 }
 
 const fmtMoney = (n: number) => n.toLocaleString("vi-VN") + "đ";
@@ -71,7 +73,7 @@ function VoucherCard({ v, onCopy, copied }: { v: Voucher; onCopy: (code: string)
       {/* Top stripe */}
       <div style={{
         height: 6,
-        background: "linear-gradient(90deg, #f97316, #fbbf24)",
+        background: "linear-gradient(90deg, #f97316, var(--brand-amber))",
       }} />
 
       {/* Body */}
@@ -93,16 +95,11 @@ function VoucherCard({ v, onCopy, copied }: { v: Voucher; onCopy: (code: string)
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6, lineHeight: 1.5 }}>{v.description}</div>
           )}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-            {v.minOrderValue > 0 && (
-              <span style={{ fontSize: 11, background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)", borderRadius: 4, padding: "2px 6px", color: "var(--text-muted)" }}>
-                Đơn từ {fmtMoney(v.minOrderValue)}
+            {summarizeConditions({ minOrderValue: v.minOrderValue, userLimit: v.userLimit }, v.conditions).map((t, i) => (
+              <span key={i} style={{ fontSize: 11, background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)", borderRadius: 4, padding: "2px 6px", color: "var(--text-muted)" }}>
+                {t}
               </span>
-            )}
-            {v.userLimit > 1 && (
-              <span style={{ fontSize: 11, background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)", borderRadius: 4, padding: "2px 6px", color: "var(--text-muted)" }}>
-                Dùng được {v.userLimit} lần
-              </span>
-            )}
+            ))}
           </div>
         </div>
       </div>
@@ -115,7 +112,7 @@ function VoucherCard({ v, onCopy, copied }: { v: Voucher; onCopy: (code: string)
             <span>{v.usedCount} / {v.usageLimit} lượt</span>
           </div>
           <div style={{ height: 4, background: "var(--bg-overlay)", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: 2, background: usedPct > 80 ? "#ef4444" : "#f97316", width: `${usedPct}%`, transition: "width .4s" }} />
+            <div style={{ height: "100%", borderRadius: 2, background: usedPct > 80 ? "var(--danger)" : "#f97316", width: `${usedPct}%`, transition: "width .4s" }} />
           </div>
         </div>
       )}
@@ -130,8 +127,8 @@ function VoucherCard({ v, onCopy, copied }: { v: Voucher; onCopy: (code: string)
       {/* Footer */}
       <div style={{ padding: "0 20px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         {/* Expiry */}
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: urgent ? "#ef4444" : "var(--text-muted)" }}>
-          <ClockIcon size={13} color={urgent ? "#ef4444" : "currentColor"} />
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: urgent ? "var(--danger)" : "var(--text-muted)" }}>
+          <ClockIcon size={13} color={urgent ? "var(--danger)" : "currentColor"} />
           {days === 0 ? "Hết hạn hôm nay!" : `Còn ${days} ngày`}
         </div>
 
@@ -145,7 +142,7 @@ function VoucherCard({ v, onCopy, copied }: { v: Voucher; onCopy: (code: string)
               padding: "7px 12px", borderRadius: 8, cursor: "pointer",
               background: copied ? "rgba(52,211,153,.1)" : "var(--bg-overlay)",
               border: `1px solid ${copied ? "rgba(52,211,153,.4)" : "var(--border-subtle)"}`,
-              color: copied ? "#34d399" : "var(--text-secondary)",
+              color: copied ? "var(--brand-emerald)" : "var(--text-secondary)",
               fontSize: 12, fontWeight: 600, transition: "all .2s",
             }}>
             {copied ? <CheckCircleIcon size={13} /> : <TicketIcon size={13} />}
@@ -157,7 +154,7 @@ function VoucherCard({ v, onCopy, copied }: { v: Voucher; onCopy: (code: string)
           <a href="/customer"
             style={{
               padding: "7px 14px", borderRadius: 8,
-              background: "linear-gradient(90deg,#f97316,#fbbf24)",
+              background: "linear-gradient(90deg,#f97316,var(--brand-amber))",
               color: "#fff", fontWeight: 700, fontSize: 12, textDecoration: "none",
               boxShadow: "0 2px 8px rgba(249,115,22,.4)",
               whiteSpace: "nowrap",
@@ -222,12 +219,12 @@ export default function CustomerVouchersPage() {
         </div>
         <div className="card" style={{ padding: "14px 18px" }}>
           <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Sắp hết hạn</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: urgentCount > 0 ? "#ef4444" : "var(--text-muted)" }}>{urgentCount}</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: urgentCount > 0 ? "var(--danger)" : "var(--text-muted)" }}>{urgentCount}</div>
           <div style={{ fontSize: 11, color: "var(--text-muted)" }}>hết hạn trong 3 ngày</div>
         </div>
         <div className="card" style={{ padding: "14px 18px" }}>
           <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Tiết kiệm tối đa</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--brand-emerald)" }}>
             {vouchers.length > 0
               ? fmtMoney(Math.max(...vouchers.map(v => v.type === "FIXED_AMOUNT" ? v.value : v.maxDiscount ?? 0)))
               : "–"}
@@ -243,10 +240,10 @@ export default function CustomerVouchersPage() {
         display: "flex", alignItems: "center", gap: 12,
       }}>
         <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(99,102,241,.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <GiftIcon size={16} color="#6366f1" />
+          <GiftIcon size={16} color="var(--brand-primary)" />
         </div>
         <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-          <strong style={{ color: "var(--text-primary)" }}>Cách dùng:</strong> Sao chép mã voucher → Vào <a href="/customer" style={{ color: "#6366f1" }}>Đặt chuyến</a> → Nhập mã ở bước Xác nhận → Nhấn <strong>Áp dụng</strong> để giảm giá ngay.
+          <strong style={{ color: "var(--text-primary)" }}>Cách dùng:</strong> Sao chép mã voucher → Vào <a href="/customer" style={{ color: "var(--brand-primary)" }}>Đặt chuyến</a> → Nhập mã ở bước Xác nhận → Nhấn <strong>Áp dụng</strong> để giảm giá ngay.
         </div>
       </div>
 
@@ -308,7 +305,7 @@ export default function CustomerVouchersPage() {
       {/* Sắp hết hạn warning section */}
       {urgentCount > 0 && (
         <div style={{ marginTop: 24, padding: "14px 18px", borderRadius: 12, background: "rgba(239,68,68,.06)", border: "1px solid rgba(239,68,68,.2)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--danger)", fontWeight: 600 }}>
             <ClockIcon size={14} /> {urgentCount} voucher sẽ hết hạn trong 3 ngày — Dùng ngay để không bỏ lỡ!
           </div>
         </div>

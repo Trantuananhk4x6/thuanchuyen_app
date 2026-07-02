@@ -89,7 +89,7 @@ export default function RouteMap({ pickup, dropoff, style }: Props) {
       if (pickup) {
         pickupRef.current = L.circleMarker([pickup.lat, pickup.lng], {
           radius: 10, color: "#fff", weight: 2.5,
-          fillColor: "#22d3ee", fillOpacity: 1,
+          fillColor: "var(--brand-secondary)", fillOpacity: 1,
         })
           .bindTooltip("📍 Điểm đón", { permanent: false, direction: "top" })
           .addTo(map);
@@ -99,37 +99,41 @@ export default function RouteMap({ pickup, dropoff, style }: Props) {
       if (dropoff) {
         dropoffRef.current = L.circleMarker([dropoff.lat, dropoff.lng], {
           radius: 10, color: "#fff", weight: 2.5,
-          fillColor: "#f472b6", fillOpacity: 1,
+          fillColor: "var(--brand-pink)", fillOpacity: 1,
         })
           .bindTooltip("🏁 Điểm trả", { permanent: false, direction: "top" })
           .addTo(map);
       }
 
       if (pickup && dropoff) {
-        // Fetch route via Goong (server-side proxy)
-        const origin = `${pickup.lat},${pickup.lng}`;
-        const dest   = `${dropoff.lat},${dropoff.lng}`;
+        const p = pickup, d = dropoff;
+        const origin = `${p.lat},${p.lng}`;
+        const dest   = `${d.lat},${d.lng}`;
 
+        // Fallback: đường thẳng nét đứt (khi không có tuyến đường thật)
+        const drawStraight = () => {
+          polyRef.current = L.polyline(
+            [[p.lat, p.lng], [d.lat, d.lng]],
+            { color: "var(--brand-primary)", weight: 3, opacity: .6, dashArray: "8 6" }
+          ).addTo(map);
+          map.fitBounds([[p.lat, p.lng], [d.lat, d.lng]], { padding: [40, 40] });
+        };
+
+        // Lấy tuyến đường thật qua proxy /api/maps/directions (Goong → OSRM keyless)
         fetch(`/api/maps/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}`)
           .then((r) => r.json())
           .then((data) => {
-            if (data.error) {
-              // Fallback: draw straight line
-              polyRef.current = L.polyline(
-                [[pickup.lat, pickup.lng], [dropoff.lat, dropoff.lng]],
-                { color: "#6366f1", weight: 3, opacity: .6, dashArray: "8 6" }
-              ).addTo(map);
-              map.fitBounds([[pickup.lat, pickup.lng], [dropoff.lat, dropoff.lng]], { padding: [40, 40] });
+            if (data.error || !data.polyline) {
+              drawStraight();
               return;
             }
-
             const path = decodePolyline(data.polyline);
             polyRef.current = L.polyline(path, {
-              color: "#6366f1", weight: 5, opacity: .9,
+              color: "var(--brand-primary)", weight: 5, opacity: .9,
             }).addTo(map);
             map.fitBounds(polyRef.current.getBounds(), { padding: [50, 50] });
           })
-          .catch(() => setRouteErr("Không tải được tuyến đường"));
+          .catch(() => drawStraight());
       } else if (pickup) {
         map.setView([pickup.lat, pickup.lng], 13);
       } else {

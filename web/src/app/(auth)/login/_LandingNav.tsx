@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { NavItem } from "@/types/landing";
+import { MenuIcon, XIcon, ExternalLinkIcon } from "@/components/ui/Icons";
 
 interface Props {
   brand: string;
@@ -39,11 +40,11 @@ export default function LandingNav({ brand, items }: Props) {
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         height: 60,
         background: scrolled
-          ? "rgba(8,14,26,.92)"
-          : "rgba(8,14,26,.0)",
+          ? "var(--bg-glass)"
+          : "transparent",
         backdropFilter: scrolled ? "blur(20px)" : "none",
         borderBottom: scrolled
-          ? "1px solid rgba(99,102,241,.15)"
+          ? "1px solid var(--border-subtle)"
           : "1px solid transparent",
         transition: "background .3s,border-color .3s,backdrop-filter .3s",
         display: "flex", alignItems: "center",
@@ -55,9 +56,8 @@ export default function LandingNav({ brand, items }: Props) {
           marginRight: "auto", cursor: "pointer",
         }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <img src="/logo.png" alt={brand}
-            style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover",
-              filter: "drop-shadow(0 0 8px rgba(99,102,241,.5))" }} />
-          <span style={{ fontWeight: 700, fontSize: 15, color: "#f1f5f9", letterSpacing: -.2 }}>
+            style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} />
+          <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)", letterSpacing: -.2 }}>
             {brand}
           </span>
         </div>
@@ -71,17 +71,17 @@ export default function LandingNav({ brand, items }: Props) {
               style={{
                 background: "none", border: "none", cursor: "pointer",
                 padding: "6px 14px", borderRadius: 8,
-                fontSize: 13, fontWeight: 500, color: "#94a3b8",
+                fontSize: 13, fontWeight: 500, color: "var(--text-secondary)",
                 display: "flex", alignItems: "center", gap: 5,
                 transition: "color .15s, background .15s",
                 position: "relative",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#f1f5f9";
-                e.currentTarget.style.background = "rgba(255,255,255,.06)";
+                e.currentTarget.style.color = "var(--text-primary)";
+                e.currentTarget.style.background = "var(--bg-hover)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#94a3b8";
+                e.currentTarget.style.color = "var(--text-secondary)";
                 e.currentTarget.style.background = "none";
               }}
             >
@@ -89,17 +89,14 @@ export default function LandingNav({ brand, items }: Props) {
               {item.badge && (
                 <span style={{
                   fontSize: 9, fontWeight: 700, padding: "1px 5px",
-                  borderRadius: 99, background: "#6366f1",
-                  color: "#fff", lineHeight: 1.4,
+                  borderRadius: 99, background: "var(--brand-primary)",
+                  color: "#04302A", lineHeight: 1.4,
                 }}>
                   {item.badge}
                 </span>
               )}
               {item.external && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.5" style={{ opacity: .5 }}>
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
-                </svg>
+                <ExternalLinkIcon size={10} strokeWidth={2.5} style={{ opacity: .5 }} />
               )}
             </button>
           ))}
@@ -111,14 +108,14 @@ export default function LandingNav({ brand, items }: Props) {
             onClick={() => document.getElementById("login-card")?.scrollIntoView({ behavior: "smooth" })}
             className="nav-cta"
             style={{
-              padding: "7px 18px", borderRadius: 10,
-              background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-              border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
-              cursor: "pointer", transition: "all .2s",
-              boxShadow: "0 2px 12px rgba(99,102,241,.4)",
+              padding: "8px 18px", borderRadius: 10,
+              background: "var(--brand-primary)",
+              border: "none", color: "#04302A", fontSize: 13, fontWeight: 700,
+              cursor: "pointer", transition: "all .18s",
+              boxShadow: "0 2px 8px rgba(0,194,168,.28)",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 20px rgba(99,102,241,.6)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(99,102,241,.4)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,194,168,.38)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,194,168,.28)"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
             Đăng nhập
           </button>
@@ -128,15 +125,13 @@ export default function LandingNav({ brand, items }: Props) {
             onClick={() => setMobileOpen(true)}
             style={{
               display: "none", width: 36, height: 36, borderRadius: 8,
-              background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)",
+              background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)",
               cursor: "pointer", alignItems: "center", justifyContent: "center",
-              color: "#94a3b8",
+              color: "var(--text-secondary)",
             }}
             aria-label="Menu"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M3 12h18M3 6h18M3 18h18"/>
-            </svg>
+            <MenuIcon size={18} strokeWidth={2.5} />
           </button>
         </div>
       </nav>
@@ -155,8 +150,8 @@ export default function LandingNav({ brand, items }: Props) {
           {/* Drawer */}
           <div style={{
             width: 280, height: "100%",
-            background: "rgba(8,14,26,.97)", backdropFilter: "blur(20px)",
-            borderLeft: "1px solid rgba(99,102,241,.15)",
+            background: "var(--bg-deep)", backdropFilter: "blur(20px)",
+            borderLeft: "1px solid var(--border-subtle)",
             display: "flex", flexDirection: "column",
             padding: 20,
           }}>
@@ -165,20 +160,18 @@ export default function LandingNav({ brand, items }: Props) {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <img src="/logo.png" alt={brand}
                   style={{ width: 28, height: 28, borderRadius: 7, objectFit: "cover" }} />
-                <span style={{ fontWeight: 700, fontSize: 14, color: "#f1f5f9" }}>{brand}</span>
+                <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{brand}</span>
               </div>
               <button
                 onClick={() => setMobileOpen(false)}
                 style={{
                   width: 30, height: 30, borderRadius: 7,
-                  background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)",
+                  background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)",
                   cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#64748b",
+                  color: "var(--text-muted)",
                 }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
+                <XIcon size={14} strokeWidth={2.5} />
               </button>
             </div>
 
@@ -191,16 +184,16 @@ export default function LandingNav({ brand, items }: Props) {
                   style={{
                     background: "none", border: "1px solid transparent",
                     cursor: "pointer", padding: "12px 14px", borderRadius: 10,
-                    textAlign: "left", fontSize: 14, fontWeight: 500, color: "#94a3b8",
+                    textAlign: "left", fontSize: 14, fontWeight: 500, color: "var(--text-secondary)",
                     display: "flex", alignItems: "center", gap: 8, transition: "all .15s",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#f1f5f9";
-                    e.currentTarget.style.background = "rgba(99,102,241,.08)";
-                    e.currentTarget.style.borderColor = "rgba(99,102,241,.2)";
+                    e.currentTarget.style.color = "var(--text-primary)";
+                    e.currentTarget.style.background = "var(--bg-hover)";
+                    e.currentTarget.style.borderColor = "var(--border-medium)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "#94a3b8";
+                    e.currentTarget.style.color = "var(--text-secondary)";
                     e.currentTarget.style.background = "none";
                     e.currentTarget.style.borderColor = "transparent";
                   }}
@@ -209,7 +202,7 @@ export default function LandingNav({ brand, items }: Props) {
                   {item.badge && (
                     <span style={{
                       fontSize: 9, fontWeight: 700, padding: "1px 6px",
-                      borderRadius: 99, background: "#6366f1", color: "#fff",
+                      borderRadius: 99, background: "var(--brand-primary)", color: "#04302A",
                     }}>
                       {item.badge}
                     </span>
@@ -222,10 +215,10 @@ export default function LandingNav({ brand, items }: Props) {
               onClick={() => { setMobileOpen(false); document.getElementById("login-card")?.scrollIntoView({ behavior: "smooth" }); }}
               style={{
                 width: "100%", padding: "12px",
-                background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                border: "none", borderRadius: 12, color: "#fff",
-                fontSize: 14, fontWeight: 600, cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(99,102,241,.4)",
+                background: "var(--brand-primary)",
+                border: "none", borderRadius: 12, color: "#04302A",
+                fontSize: 14, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 3px 12px rgba(0,194,168,.3)",
               }}
             >
               Đăng nhập ngay

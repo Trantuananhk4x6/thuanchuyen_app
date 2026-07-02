@@ -207,7 +207,6 @@ class _TripView extends StatelessWidget {
   Widget build(BuildContext context) {
     final trip    = state.trip!;
     final stops   = state.stops;
-    final pending = stops.where((s) => s.isPending).toList();
     final allDone = stops.isNotEmpty && stops.every((s) => !s.isPending);
 
     return ListView(

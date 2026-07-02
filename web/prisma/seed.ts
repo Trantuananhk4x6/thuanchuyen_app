@@ -12,7 +12,7 @@ async function main() {
     update: {},
     create: {
       phone: "0900000001",
-      fullName: "Admin Thuận Đường",
+      fullName: "Admin Thuận Chuyến",
       role: "ADMIN",
     },
   });

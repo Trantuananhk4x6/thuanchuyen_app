@@ -1,5 +1,6 @@
 ﻿import Link from "next/link";
 import dynamic from "next/dynamic";
+import BackButton from "@/components/BackButton";
 
 const HowItWorksSection   = dynamic(() => import("./_GuideIcons").then(m => ({ default: m.HowItWorksSection })),   { ssr: false });
 const CustomerFeaturesSection = dynamic(() => import("./_GuideIcons").then(m => ({ default: m.CustomerFeaturesSection })), { ssr: false });
@@ -19,12 +20,15 @@ export default function GuidePage() {
         padding: "0 24px", height: 60,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
-        <Link href="/" style={{
-          fontWeight: 800, fontSize: 18, color: "#f1f5f9", textDecoration: "none",
-          display: "flex", alignItems: "center", gap: 8,
-        }}>
-          🚌 <span style={{ background: "linear-gradient(90deg,#6366f1,#22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Thuận Chuyến</span>
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <BackButton fallback="/" />
+          <Link href="/" style={{
+            fontWeight: 800, fontSize: 18, color: "#f1f5f9", textDecoration: "none",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            🚌 <span style={{ background: "linear-gradient(90deg,#6366f1,#22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Thuận Chuyến</span>
+          </Link>
+        </div>
         <Link href="/login" style={{
           padding: "8px 18px", background: "linear-gradient(135deg,#6366f1,#4f46e5)",
           borderRadius: 8, color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600,

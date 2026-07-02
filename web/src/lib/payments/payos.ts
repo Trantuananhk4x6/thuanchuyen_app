@@ -5,7 +5,7 @@ const API_KEY = () => process.env.PAYOS_API_KEY!;
 const CHECKSUM_KEY = () => process.env.PAYOS_CHECKSUM_KEY!;
 const RETURN_URL = () => process.env.PAYOS_RETURN_URL!;
 const CANCEL_URL = () => process.env.PAYOS_CANCEL_URL!;
-const PAYOS_BASE = "https://api-merchant.payos.vn";
+const PAYOS_BASE = process.env.PAYOS_API_BASE_URL ?? "https://api-merchant.payos.vn";
 
 function sign(data: string): string {
   return createHmac("sha256", CHECKSUM_KEY()).update(data).digest("hex");

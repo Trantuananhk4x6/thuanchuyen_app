@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     quotedPrice: result.quotedPrice,
     priceBreakdown: {
       base: result.quotedPrice,
-      perKm: Math.round(result.quotedPrice / result.distanceKm),
+      perKm: result.distanceKm > 0 ? Math.round(result.quotedPrice / result.distanceKm) : 0,
     },
   });
 }

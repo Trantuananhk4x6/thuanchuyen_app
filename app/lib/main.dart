@@ -18,18 +18,18 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const ProviderScope(child: ThuanDuongApp()));
+  runApp(const ProviderScope(child: ThuanChuyenApp()));
 }
 
-class ThuanDuongApp extends ConsumerWidget {
-  const ThuanDuongApp({super.key});
+class ThuanChuyenApp extends ConsumerWidget {
+  const ThuanChuyenApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Thuận Đường',
+      title: 'Thuận Chuyến',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: router,

@@ -12,11 +12,13 @@ export async function GET(req: NextRequest) {
   const parsed = ListQuerySchema.safeParse(params);
   if (!parsed.success) return Errors.validation(parsed.error.errors[0].message);
 
-  const [items, total] = await listUsers({
+  const { items, total, stats } = await listUsers({
     page: parsed.data.page,
     limit: parsed.data.limit,
     status: parsed.data.status,
+    role: parsed.data.role,
+    search: parsed.data.search,
   });
 
-  return ok({ items, total, page: parsed.data.page });
+  return ok({ items, total, page: parsed.data.page, stats });
 }

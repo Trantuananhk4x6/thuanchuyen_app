@@ -24,14 +24,16 @@ function buildCsp(): string {
     // Allow inline styles (Tailwind, styled-jsx, maps inject inline styles)
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com data:`,
-    // Maps (Goong, OSM) + Supabase storage + self
-    `img-src 'self' data: blob: https://*.goong.io https://*.openstreetmap.org https://*.supabase.co`,
-    // WebSocket for Supabase realtime; HTTPS for all APIs used
-    `connect-src 'self' wss://*.supabase.co https://*.supabase.co https://nominatim.openstreetmap.org https://rsapi.goong.io https://tile.goong.io`,
+    // Maps (Goong, OSM, CartoDB tiles, Photon) + Supabase storage + self + ảnh avatar/demo (pravatar, picsum, unsplash)
+    `img-src 'self' data: blob: https://*.goong.io https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.basemaps.cartocdn.com https://*.supabase.co https://i.pravatar.cc https://picsum.photos https://fastly.picsum.photos https://images.unsplash.com https://*.googleusercontent.com https://*.gravatar.com`,
+    // WebSocket for Supabase realtime; HTTPS for all geocoding/maps APIs used
+    `connect-src 'self' wss://*.supabase.co https://*.supabase.co https://nominatim.openstreetmap.org https://photon.komoot.io https://rsapi.goong.io https://tile.goong.io`,
     // Map tiles may use workers with blob: URLs
     `worker-src 'self' blob:`,
-    // Map canvases / tiles
-    `frame-src 'none'`,
+    // Same-origin iframes only (admin landing live-preview embeds /login)
+    `frame-src 'self'`,
+    // Cho phép chính app nhúng trang của mình (admin preview); chặn site khác
+    `frame-ancestors 'self'`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
@@ -46,8 +48,8 @@ function buildCsp(): string {
  * Call this in middleware for every outgoing response.
  */
 export function applySecurityHeaders(res: NextResponse): NextResponse {
-  // Prevent clickjacking
-  res.headers.set("X-Frame-Options", "DENY");
+  // Prevent clickjacking từ site khác, nhưng cho phép admin tự nhúng preview
+  res.headers.set("X-Frame-Options", "SAMEORIGIN");
   // Prevent MIME sniffing
   res.headers.set("X-Content-Type-Options", "nosniff");
   // Legacy XSS filter (still useful for older browsers)

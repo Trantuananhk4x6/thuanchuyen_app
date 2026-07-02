@@ -26,41 +26,56 @@ interface Props {
   autoFocus?: boolean;
 }
 
-async function searchNominatim(query: string): Promise<Suggestion[]> {
+interface PhotonProps {
+  name?: string; housenumber?: string; street?: string; locality?: string;
+  district?: string; city?: string; county?: string; state?: string;
+  country?: string; countrycode?: string; postcode?: string;
+}
+
+// Photon (photon.komoot.io) — geocoder dựa trên OpenStreetMap, MIỄN PHÍ, không cần key,
+// và được thiết kế cho autocomplete/gõ-tới-đâu-gợi-ý-tới-đó (Nominatim cấm kiểu dùng này).
+async function searchPhoton(query: string): Promise<Suggestion[]> {
   if (!query.trim() || query.length < 2) return [];
   try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("q",              query);
-    url.searchParams.set("format",         "json");
-    url.searchParams.set("countrycodes",   "vn");
-    url.searchParams.set("limit",          "7");
-    url.searchParams.set("accept-language","vi");
-    url.searchParams.set("addressdetails", "1");
+    const url = new URL("https://photon.komoot.io/api/");
+    url.searchParams.set("q", query);
+    url.searchParams.set("limit", "7");
+    // Ưu tiên kết quả quanh Việt Nam (Đà Nẵng làm tâm)
+    url.searchParams.set("lat", "16.047");
+    url.searchParams.set("lon", "108.206");
 
-    const res  = await fetch(url.toString(), {
-      headers: { "Accept-Language": "vi", "User-Agent": "ThuanDuong/1.0" },
-    });
+    const res = await fetch(url.toString());
     if (!res.ok) return [];
-    const data: Array<{
-      place_id: number;
-      display_name: string;
-      lat: string;
-      lon: string;
-    }> = await res.json();
+    const data: { features?: Array<{ properties: PhotonProps; geometry: { coordinates: [number, number] } }> } =
+      await res.json();
 
-    return data.map((item) => {
-      const parts       = item.display_name.split(", ");
-      const mainText    = parts.slice(0, 2).join(", ");
-      const secondaryText = parts.slice(2).join(", ");
-      return {
-        id:            String(item.place_id),
-        mainText,
-        secondaryText,
-        fullText:      item.display_name,
-        lat:           parseFloat(item.lat),
-        lng:           parseFloat(item.lon),
-      };
-    });
+    return (data.features ?? [])
+      // Ưu tiên địa chỉ ở Việt Nam
+      .filter((f) => !f.properties.countrycode || f.properties.countrycode === "VN")
+      .map((f, idx) => {
+        const p = f.properties;
+        const [lng, lat] = f.geometry.coordinates;
+
+        const streetLine = [p.housenumber, p.street].filter(Boolean).join(" ");
+        const mainText = p.name || streetLine || p.city || p.country || "Vị trí";
+
+        const rest: string[] = [];
+        if (streetLine && !mainText.includes(streetLine)) rest.push(streetLine);
+        if (p.district && p.district !== mainText) rest.push(p.district);
+        if (p.city && p.city !== mainText) rest.push(p.city);
+        if (p.state && p.state !== p.city) rest.push(p.state);
+        if (p.country) rest.push(p.country);
+        const secondaryText = [...new Set(rest)].join(", ");
+
+        return {
+          id: `${idx}-${lat.toFixed(5)}-${lng.toFixed(5)}`,
+          mainText,
+          secondaryText,
+          fullText: secondaryText ? `${mainText}, ${secondaryText}` : mainText,
+          lat,
+          lng,
+        };
+      });
   } catch { return []; }
 }
 
@@ -89,7 +104,7 @@ export default function PlaceAutocomplete({
 
     setFetching(true);
     debounceRef.current = setTimeout(async () => {
-      const results = await searchNominatim(input);
+      const results = await searchPhoton(input);
       setSuggestions(results);
       setOpen(results.length > 0);
       setActiveIdx(-1);
@@ -158,7 +173,7 @@ export default function PlaceAutocomplete({
           {fetching ? (
             <div style={{
               width: 14, height: 14,
-              border: "2px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1",
+              border: "2px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)",
               borderRadius: "50%", animation: "spin .6s linear infinite",
             }} />
           ) : value ? (
@@ -238,7 +253,7 @@ function highlightMatch(text: string, query: string) {
   return (
     <>
       {text.slice(0, idx)}
-      <span style={{ color: "#22d3ee", fontWeight: 700 }}>{text.slice(idx, idx + query.length)}</span>
+      <span style={{ color: "var(--brand-secondary)", fontWeight: 700 }}>{text.slice(idx, idx + query.length)}</span>
       {text.slice(idx + query.length)}
     </>
   );

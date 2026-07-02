@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/api/api_client.dart';
 import '../../../../data/models/trip.dart';
+import '../../../../data/models/trip_detail.dart';
 import '../../../../data/repositories/trip_repository.dart';
 import '../../../auth/providers/auth_provider.dart';
 
@@ -66,8 +67,23 @@ final customerTripsProvider = StateNotifierProvider.autoDispose<CustomerTripsNot
   (ref) => CustomerTripsNotifier(ref.read(tripRepositoryProvider)),
 );
 
-// ── Single trip provider ──────────────────────────────────────────────────────
+// ── Single trip provider (chi tiết + stops) ───────────────────────────────────
 
-final tripDetailProvider = FutureProvider.autoDispose.family<Trip, String>(
-  (ref, id) => ref.read(tripRepositoryProvider).getTrip(id),
+final tripDetailProvider = FutureProvider.autoDispose.family<TripDetail, String>(
+  (ref, id) => ref.read(tripRepositoryProvider).getCustomerTripDetail(id),
 );
+
+// ── Live driver location (poll mỗi 8 giây khi đang theo dõi) ───────────────────
+
+final driverLocationProvider =
+    StreamProvider.autoDispose.family<DriverLocation, String>((ref, tripId) async* {
+  final repo = ref.read(tripRepositoryProvider);
+  while (true) {
+    try {
+      yield await repo.getDriverLocation(tripId);
+    } catch (_) {
+      // Bỏ qua lỗi mạng tạm thời, tiếp tục poll
+    }
+    await Future<void>.delayed(const Duration(seconds: 8));
+  }
+});

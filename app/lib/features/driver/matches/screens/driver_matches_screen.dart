@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_format.dart';
 import '../../../../data/api/api_client.dart';
 import '../../../../data/models/match.dart';
 import '../../../../data/repositories/driver_repository.dart';
@@ -139,8 +140,8 @@ class _Empty extends StatelessWidget {
 class _MatchCard extends StatefulWidget {
   const _MatchCard({required this.match, required this.onAccept, required this.onReject});
   final TripMatch    match;
-  final VoidCallback onAccept;
-  final VoidCallback onReject;
+  final Future<void> Function() onAccept;
+  final Future<void> Function() onReject;
 
   @override
   State<_MatchCard> createState() => _MatchCardState();
@@ -158,9 +159,13 @@ class _MatchCardState extends State<_MatchCard> {
     _timeLeft = widget.match.timeLeft;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _timeLeft = widget.match.timeLeft);
+      final left = widget.match.timeLeft;
+      setState(() => _timeLeft = left);
+      if (left.inSeconds <= 0) _timer?.cancel(); // hết hạn → dừng đếm
     });
   }
+
+  bool get _expired => _timeLeft.inSeconds <= 0;
 
   @override
   void dispose() { _timer?.cancel(); super.dispose(); }
@@ -202,8 +207,7 @@ class _MatchCardState extends State<_MatchCard> {
           Wrap(spacing: 8, runSpacing: 4, children: [
             _InfoTag(Icons.people_outline_rounded, '${req.seats} ghế', AppColors.info),
             _InfoTag(Icons.access_time_rounded,
-              '${req.departureTime.hour.toString().padLeft(2,'0')}:${req.departureTime.minute.toString().padLeft(2,'0')} '
-              '${req.departureTime.day}/${req.departureTime.month}',
+              '${AppDate.time(req.departureTime)} ${AppDate.dayMonth(req.departureTime)}',
               AppColors.textMuted),
             _InfoTag(Icons.alt_route_rounded, 'Đường vòng ${m.detourKm.toStringAsFixed(1)} km', AppColors.warning),
           ]),
@@ -216,7 +220,7 @@ class _MatchCardState extends State<_MatchCard> {
             child: OutlinedButton(
               onPressed: (_accepting || _rejecting) ? null : () async {
                 setState(() => _rejecting = true);
-                widget.onReject();
+                await widget.onReject();
                 if (mounted) setState(() => _rejecting = false);
               },
               style: OutlinedButton.styleFrom(
@@ -232,15 +236,15 @@ class _MatchCardState extends State<_MatchCard> {
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton(
-              onPressed: (_accepting || _rejecting) ? null : () async {
+              onPressed: (_accepting || _rejecting || _expired) ? null : () async {
                 setState(() => _accepting = true);
-                widget.onAccept();
+                await widget.onAccept();
                 if (mounted) setState(() => _accepting = false);
               },
               child: _accepting
                   ? const SizedBox(width: 16, height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Chấp nhận'),
+                  : Text(_expired ? 'Đã hết hạn' : 'Chấp nhận'),
             ),
           ),
         ]),

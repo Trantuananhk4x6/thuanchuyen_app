@@ -19,10 +19,15 @@ export async function notify(opts: NotifyOptions): Promise<void> {
   let phone = opts.phone;
   let email = opts.email;
 
-  if (!phone) {
-    const user = await prisma.user.findUnique({ where: { id: opts.userId } });
-    phone = user?.phone ?? "";
-    email = email ?? null;
+  // Tra cứu user nếu thiếu phone HOẶC thiếu email → email luôn được điền để nhánh
+  // email (KYC/withdrawal/broadcast) thực sự chạy, kể cả khi caller chỉ truyền phone.
+  if (!phone || email === undefined || email === null) {
+    const user = await prisma.user.findUnique({
+      where: { id: opts.userId },
+      select: { phone: true, email: true },
+    });
+    phone = phone ?? user?.phone ?? "";
+    email = email ?? user?.email ?? null;
   }
 
   const template = getTemplate(opts.event);

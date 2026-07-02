@@ -3,6 +3,7 @@ import { createHash } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
 import { prisma } from "@/lib/db/prisma";
 import { buildAdapter } from "./adapter";
 import { checkBruteForce, recordLoginAttempt } from "@/lib/security/brute-force";
@@ -18,6 +19,16 @@ export const authOptions: NextAuthOptions = {
       ? [GoogleProvider({
           clientId: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        })]
+      : []),
+
+    // ── Facebook OAuth (chỉ kích hoạt khi có credentials) ───────────────────
+    ...(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET
+      ? [FacebookProvider({
+          clientId: process.env.FACEBOOK_APP_ID,
+          clientSecret: process.env.FACEBOOK_APP_SECRET,
+          // next-auth v4 mặc định dùng Graph API v11.0 (2021, quá cũ) → nâng lên v23.0.
+          authorization: "https://www.facebook.com/v23.0/dialog/oauth?scope=email",
         })]
       : []),
 

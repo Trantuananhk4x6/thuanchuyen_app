@@ -16,6 +16,9 @@ export async function initiatePayment(
   gateway: "PAYOS" | "WALLET",
   amount: number,
 ) {
+  // Chưa có ví nội bộ cho khách → chỉ hỗ trợ PayOS, không giả lập "đã thanh toán".
+  if (gateway !== "PAYOS") throw new Error("Phương thức thanh toán chưa được hỗ trợ");
+
   const payment = await createPayment({
     tripId,
     customerId,
@@ -41,11 +44,12 @@ export async function handlePayOSWebhook(body: PayOSWebhookBody) {
   const payment = await findPaymentByProviderRef(String(orderCode));
   if (!payment) throw new Error("Không tìm thấy thanh toán");
 
+  // Idempotent: PayOS gửi lại webhook nhiều lần → đã PAID thì bỏ qua, không chạy lại side-effect.
+  if (payment.status === "PAID") return;
+
   if (body.success && body.code === "00") {
-    await updatePaymentStatus(payment.id, "PAID", {
-      providerRef: body.data.reference,
-      paidAt: new Date(),
-    });
+    // KHÔNG ghi đè providerRef (là orderCode dùng để tra cứu khi PayOS retry).
+    await updatePaymentStatus(payment.id, "PAID", { paidAt: new Date() });
     await onPaymentSuccess(payment.tripId, payment.customerId, amount);
   } else {
     await updatePaymentStatus(payment.id, "FAILED");

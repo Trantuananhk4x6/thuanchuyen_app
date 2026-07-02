@@ -16,6 +16,9 @@ export const VerifyOtpSchema = z.object({
 export const UpdateProfileSchema = z.object({
   fullName: z.string().min(2).max(100).optional(),
   avatarUrl: z.string().url().optional(),
+  // Số điện thoại được chuẩn hóa + kiểm tra định dạng VN ở tầng route (dùng
+  // sanitizePhone/isValidVietnamPhone), nên ở đây chỉ ràng buộc lỏng.
+  phone: z.string().trim().min(9).max(15).optional(),
 });
 
 export const SwitchRoleSchema = z.object({

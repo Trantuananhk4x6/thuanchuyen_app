@@ -232,7 +232,7 @@ class _RouteCard extends StatelessWidget {
         Switch.adaptive(
           value: route.isActive,
           onChanged: onToggle,
-          activeColor: AppColors.primary,
+          activeThumbColor: AppColors.primary,
         ),
       ]),
     );
@@ -316,7 +316,7 @@ class _AddRouteFormState extends State<_AddRouteForm> {
         const SizedBox(height: 12),
 
         Row(children: [
-          Switch.adaptive(value: _cargo, onChanged: (v) => setState(() => _cargo = v), activeColor: AppColors.primary),
+          Switch.adaptive(value: _cargo, onChanged: (v) => setState(() => _cargo = v), activeThumbColor: AppColors.primary),
           const SizedBox(width: 8),
           const Text('Nhận vận chuyển hàng hóa', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
         ]),

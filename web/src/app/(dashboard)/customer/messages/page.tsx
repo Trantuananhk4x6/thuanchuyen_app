@@ -35,7 +35,7 @@ function Avatar({ name, url, size = 44 }: { name?: string | null; url?: string |
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: "linear-gradient(135deg,#6366f1,#22d3ee)",
+      background: "linear-gradient(135deg,var(--brand-primary),var(--brand-secondary))",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontSize: size * 0.38, fontWeight: 700, color: "#fff",
     }}>{init}</div>
@@ -59,7 +59,7 @@ export default function CustomerMessagesPage() {
 
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
-      <div style={{ width: 36, height: 36, border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+      <div style={{ width: 36, height: 36, border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -67,7 +67,7 @@ export default function CustomerMessagesPage() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-        <ChatIcon size={22} color="#a78bfa"/> Tin nhắn
+        <ChatIcon size={22} color="var(--brand-violet)"/> Tin nhắn
       </h1>
 
       <div style={{ display: "grid", gridTemplateColumns: convs.length > 0 ? "320px 1fr" : "1fr", gap: 16, alignItems: "start" }}>
@@ -94,7 +94,7 @@ export default function CustomerMessagesPage() {
                     display: "flex", gap: 12, padding: "14px 16px",
                     borderBottom: "1px solid var(--border-subtle)", cursor: "pointer",
                     background: isActive ? "rgba(99,102,241,.1)" : "transparent",
-                    borderLeft: isActive ? "3px solid #6366f1" : "3px solid transparent",
+                    borderLeft: isActive ? "3px solid var(--brand-primary)" : "3px solid transparent",
                     transition: "all .15s",
                   }}
                   onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--bg-overlay)"; }}
@@ -105,7 +105,7 @@ export default function CustomerMessagesPage() {
                     {c.unreadCount > 0 && (
                       <span style={{
                         position: "absolute", top: -2, right: -2,
-                        background: "#ef4444", color: "#fff",
+                        background: "var(--danger)", color: "#fff",
                         borderRadius: "50%", width: 18, height: 18,
                         fontSize: 10, fontWeight: 700,
                         display: "flex", alignItems: "center", justifyContent: "center",

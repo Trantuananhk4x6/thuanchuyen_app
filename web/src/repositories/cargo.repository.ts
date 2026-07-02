@@ -31,13 +31,19 @@ export function findPendingCargoNearRoute(
   // Dùng bounding-box đơn giản thay ST_DWithin vì không có PostGIS trong Prisma raw
   const latDelta = radiusKm / 111;
   const lngDelta = radiusKm / (111 * Math.cos((originLat * Math.PI) / 180));
+  const destLatDelta = radiusKm / 111;
+  const destLngDelta = radiusKm / (111 * Math.cos((destLat * Math.PI) / 180));
 
   return prisma.cargoRequest.findMany({
     where: {
       status: "PENDING",
       expiresAt: { gt: new Date() },
+      // Điểm đón gần điểm đón của chuyến...
       pickupLat:  { gte: originLat - latDelta, lte: originLat + latDelta },
       pickupLng:  { gte: originLng - lngDelta, lte: originLng + lngDelta },
+      // ...VÀ điểm giao cùng hướng với điểm đến (không nhận hàng ngược chiều).
+      dropoffLat: { gte: destLat - destLatDelta, lte: destLat + destLatDelta },
+      dropoffLng: { gte: destLng - destLngDelta, lte: destLng + destLngDelta },
     },
     include: { sender: true },
     take: 30,

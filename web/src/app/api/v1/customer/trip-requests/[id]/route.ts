@@ -5,6 +5,7 @@ import {
   findRequestById,
   updateRequestStatus,
 } from "@/repositories/trip-request.repository";
+import { refundVoucherForRequest } from "@/repositories/voucher.repository";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAuth(req);
@@ -29,5 +30,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   await updateRequestStatus(params.id, "CANCELLED");
+  // Hoàn lại lượt voucher đã dùng cho yêu cầu này (best-effort).
+  await refundVoucherForRequest(params.id).catch(() => {});
   return ok({ cancelled: true });
 }

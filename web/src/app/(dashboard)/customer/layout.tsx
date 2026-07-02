@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { ThemeToggle } from "@/components/ThemeProvider";
 import NotificationBell from "@/components/NotificationBell";
+import Brand from "@/components/Brand";
+import PhoneGate from "@/components/PhoneGate";
 import { api } from "@/lib/api/client";
 import {
   MapIcon, PackageIcon, HistoryIcon, LogOutIcon, TicketIcon, ChatIcon,
@@ -122,7 +124,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
     }}>
       <div style={{
         width: 36, height: 36, borderRadius: "50%",
-        border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1",
+        border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)",
         animation: "spin .8s linear infinite",
       }}/>
       <span style={{ color: "var(--text-muted)", fontSize: 13 }}>Đang tải...</span>
@@ -140,19 +142,25 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)" }}>
+      {/* Bắt liên kết số điện thoại nếu tài khoản chưa có */}
+      <PhoneGate />
 
       {/* ── Top header ─────────────────────────────────────────── */}
       <header style={{
         position: "sticky", top: 0, zIndex: 30,
         background: "rgba(9,18,38,.92)", backdropFilter: "blur(20px)",
         borderBottom: showBanner ? "none" : "1px solid var(--border-subtle)",
+        boxShadow: "0 1px 0 rgba(99,102,241,.25), 0 8px 30px -12px rgba(34,211,238,.25)",
       }}>
+        {/* Neon underline */}
+        <div aria-hidden style={{
+          position: "absolute", bottom: 0, left: 0, right: 0, height: 1,
+          background: "linear-gradient(90deg, transparent 0%, #6366f1 25%, #22d3ee 50%, #a78bfa 75%, transparent 100%)",
+          opacity: 0.65, pointerEvents: "none",
+        }} />
         <div style={{ height: 60, display: "flex", alignItems: "center", padding: "0 24px", gap: 24 }}>
           {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <img src="/logo.png" alt="Thuận Chuyến" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
-            <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>Thuận Chuyến</span>
-          </div>
+          <Brand size={44} fontSize={21} subtitle="Ghép chuyến AI" href="/customer" />
 
           {/* Desktop nav */}
           <nav style={{ display: "flex", gap: 4, flex: 1 }} className="desktop-nav">
@@ -240,8 +248,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               flex: 1, display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center", gap: 3,
               textDecoration: "none",
-              color: active ? color : "var(--text-muted)",
-              padding: "8px 4px",
+              color: active ? color : "var(--text-secondary)",
+              padding: "6px 2px",
               position: "relative",
             }}>
               {active && (
@@ -250,16 +258,13 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                   background: color, borderRadius: "0 0 4px 4px",
                 }}/>
               )}
-              <Icon size={20} color={active ? color : "currentColor"}/>
-              <span style={{ fontSize: 9, fontWeight: active ? 700 : 400, letterSpacing: .3, textTransform: "uppercase" }}>
-                {label.split(" ")[0]}
+              <Icon size={19} color={active ? color : "currentColor"}/>
+              <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, lineHeight: 1.15, textAlign: "center" }}>
+                {label}
               </span>
             </Link>
           );
         })}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 4px", flex: 1 }}>
-          <ThemeToggle />
-        </div>
       </nav>
 
       <style>{`

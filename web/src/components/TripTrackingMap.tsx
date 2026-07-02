@@ -97,7 +97,7 @@ export default function TripTrackingMap({ stops, currentStopIndex, driverPos, st
     if (validStops.length > 1) {
       const line = L.polyline(
         validStops.map((s) => [s.lat, s.lng]),
-        { color: "#6366f1", weight: 3, opacity: .6, dashArray: "6 4" }
+        { color: "var(--brand-primary)", weight: 3, opacity: .6, dashArray: "6 4" }
       ).addTo(map);
       markersRef.current.push(line);
     }
@@ -106,7 +106,7 @@ export default function TripTrackingMap({ stops, currentStopIndex, driverPos, st
     if (driverPos) {
       const driverIcon = L.divIcon({
         className: "",
-        html: `<div style="font-size:28px;filter:drop-shadow(0 0 8px #6366f1);animation:pulse3 1s infinite;">🚗</div>`,
+        html: `<div style="font-size:28px;filter:drop-shadow(0 0 8px var(--brand-primary));animation:pulse3 1s infinite;">🚗</div>`,
         iconSize: [36, 36], iconAnchor: [18, 18],
       });
       const dm = L.marker([driverPos.lat, driverPos.lng], { icon: driverIcon })

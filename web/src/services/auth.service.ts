@@ -5,6 +5,7 @@ import {
   markOtpUsed,
   incrementOtpAttempts,
   findUserByPhone,
+  findUserById,
   createUser,
   createRefreshToken,
   findRefreshToken,
@@ -77,7 +78,13 @@ export async function refreshTokenPair(rawRefreshToken: string) {
   }
 
   await deleteRefreshToken(stored.id);
-  return issueTokens(payload.userId, payload.role);
+
+  // Đọc lại user từ DB: chặn tài khoản đã bị khóa lấy lại session, và luôn cấp
+  // token theo role hiện tại trong DB (không dùng role cũ trong token).
+  const user = await findUserById(payload.userId);
+  if (!user || user.isBlocked) throw new Error("Tài khoản đã bị khóa hoặc không tồn tại");
+
+  return issueTokens(user.id, user.role);
 }
 
 async function issueTokens(userId: string, role: string) {

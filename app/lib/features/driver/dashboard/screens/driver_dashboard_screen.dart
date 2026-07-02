@@ -294,7 +294,7 @@ class _OnlineToggleState extends ConsumerState<_OnlineToggle> {
         _loading
             ? const SizedBox(width: 20, height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
-            : Switch.adaptive(value: _online, onChanged: _toggle, activeColor: AppColors.success),
+            : Switch.adaptive(value: _online, onChanged: _toggle, activeThumbColor: AppColors.success),
       ]),
     );
   }

@@ -45,7 +45,7 @@ export default function DriverCargoPage() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <PackageIcon size={22} color="#22d3ee"/> Hàng ghép
+            <PackageIcon size={22} color="var(--brand-secondary)"/> Hàng ghép
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Đơn hàng nhỏ gần tuyến đường của bạn</p>
         </div>
@@ -55,7 +55,7 @@ export default function DriverCargoPage() {
       </div>
 
       {error && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, marginBottom: 16, background: "rgba(248,113,113,.1)", border: "1px solid rgba(248,113,113,.3)", color: "#f87171", fontSize: 13 }}>
+        <div style={{ padding: "10px 14px", borderRadius: 10, marginBottom: 16, background: "rgba(248,113,113,.1)", border: "1px solid rgba(248,113,113,.3)", color: "var(--danger)", fontSize: 13 }}>
           {error}
         </div>
       )}
@@ -63,7 +63,7 @@ export default function DriverCargoPage() {
       {noAccess && (
         <div style={{ textAlign: "center", padding: "48px 20px", background: "rgba(34,211,238,.06)", border: "1px solid rgba(34,211,238,.25)", borderRadius: 18 }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>📦</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#22d3ee", marginBottom: 6 }}>Chưa bật ghép hàng</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--brand-secondary)", marginBottom: 6 }}>Chưa bật ghép hàng</div>
           <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.6, maxWidth: 320, margin: "0 auto 20px" }}>
             {noAccess === "Tài xế chưa bật ghép hàng"
               ? "Bạn cần bật tính năng ghép hàng trong hồ sơ KYC để xem và nhận đơn hàng."
@@ -77,7 +77,7 @@ export default function DriverCargoPage() {
 
       {loading && !noAccess && (
         <div style={{ display: "flex", justifyContent: "center", padding: 48 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "#6366f1", animation: "spin .8s linear infinite" }}/>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(99,102,241,.2)", borderTopColor: "var(--brand-primary)", animation: "spin .8s linear infinite" }}/>
         </div>
       )}
 
@@ -97,14 +97,14 @@ export default function DriverCargoPage() {
               borderRadius: 16, overflow: "hidden",
               transition: "border-color .2s, box-shadow .2s",
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#22d3ee"; e.currentTarget.style.boxShadow = "0 0 16px rgba(34,211,238,.12)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-secondary)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(34,211,238,.12)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-subtle)"; e.currentTarget.style.boxShadow = "none"; }}
             >
               <div style={{ padding: "9px 16px", borderBottom: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-elevated)" }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 5 }}>
-                  <PackageIcon size={12} color="#22d3ee"/> {item.weightKg} kg
+                  <PackageIcon size={12} color="var(--brand-secondary)"/> {item.weightKg} kg
                 </span>
-                <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: "rgba(52,211,153,.15)", color: "#34d399", border: "1px solid rgba(52,211,153,.3)" }}>
+                <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: "rgba(52,211,153,.15)", color: "var(--brand-emerald)", border: "1px solid rgba(52,211,153,.3)" }}>
                   Chờ ghép
                 </span>
               </div>
@@ -116,16 +116,16 @@ export default function DriverCargoPage() {
 
                 <div style={{ background: "var(--bg-overlay)", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-                    <MapPinIcon size={13} color="#22d3ee" style={{ flexShrink: 0, marginTop: 2 }}/>
+                    <MapPinIcon size={13} color="var(--brand-secondary)" style={{ flexShrink: 0, marginTop: 2 }}/>
                     <div>
-                      <div style={{ fontSize: 10, color: "#22d3ee", fontWeight: 700, textTransform: "uppercase", letterSpacing: .5 }}>Lấy hàng</div>
+                      <div style={{ fontSize: 10, color: "var(--brand-secondary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .5 }}>Lấy hàng</div>
                       <div style={{ fontSize: 12, color: "var(--text-primary)" }}>{item.pickupAddress}</div>
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                    <MapPinIcon size={13} color="#f472b6" style={{ flexShrink: 0, marginTop: 2 }}/>
+                    <MapPinIcon size={13} color="var(--brand-pink)" style={{ flexShrink: 0, marginTop: 2 }}/>
                     <div>
-                      <div style={{ fontSize: 10, color: "#f472b6", fontWeight: 700, textTransform: "uppercase", letterSpacing: .5 }}>Giao hàng</div>
+                      <div style={{ fontSize: 10, color: "var(--brand-pink)", fontWeight: 700, textTransform: "uppercase", letterSpacing: .5 }}>Giao hàng</div>
                       <div style={{ fontSize: 12, color: "var(--text-primary)" }}>{item.dropoffAddress}</div>
                     </div>
                   </div>
@@ -133,13 +133,13 @@ export default function DriverCargoPage() {
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <CoinIcon size={14} color="#fbbf24"/>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: "#fbbf24" }}>
+                    <CoinIcon size={14} color="var(--brand-amber)"/>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: "var(--brand-amber)" }}>
                       {item.quotedPrice.toLocaleString("vi-VN")}đ
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-muted)" }}>
-                    <ClockIcon size={11} color="#6366f1"/>
+                    <ClockIcon size={11} color="var(--brand-primary)"/>
                     {new Date(item.createdAt).toLocaleDateString("vi-VN")}
                   </div>
                 </div>

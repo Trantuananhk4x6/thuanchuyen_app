@@ -1,6 +1,6 @@
 {
-    "name": "thuanduong_app",
-    "short_name": "thuanduong_app",
+    "name": "Thuận Chuyến",
+    "short_name": "Thuận Chuyến",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

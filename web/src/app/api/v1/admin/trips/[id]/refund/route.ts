@@ -15,6 +15,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const payments = await findPaymentsByTrip(params.id);
   const paid = payments.find((p) => p.status === "PAID");
   if (!paid) return Errors.notFound("Không tìm thấy thanh toán đã hoàn tất");
+  if (parsed.data.amount > paid.amount) {
+    return Errors.validation("Số tiền hoàn không được vượt quá số tiền đã thanh toán");
+  }
 
   const refunded = await markRefunded(paid.id, parsed.data.amount);
   return ok({ payment: refunded, reason: parsed.data.reason });
